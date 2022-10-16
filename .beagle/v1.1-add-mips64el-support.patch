@@ -1,0 +1,26 @@
+From 56fa8e571f033c6fac18b3beef03ebfb310eda4d Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Sun, 10 Apr 2022 11:55:36 +0800
+Subject: [PATCH] add mips64el support
+
+---
+ script/lib.sh | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/script/lib.sh b/script/lib.sh
+index 9afa0b4c..e821257f 100644
+--- a/script/lib.sh
++++ b/script/lib.sh
+@@ -26,6 +26,9 @@ function set_cross_vars() {
+ 	s390x)
+ 		HOST=s390x-linux-gnu
+ 		;;
++	mips64el)
++		HOST=mips64el-linux-gnuabi64
++		;;
+ 	*)
+ 		echo "set_cross_vars: unsupported architecture: $1" >&2
+ 		exit 1
+-- 
+2.25.1
+
