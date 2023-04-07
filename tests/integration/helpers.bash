@@ -26,7 +26,7 @@ TESTDATA="${INTEGRATION_ROOT}/testdata"
 # Kernel version
 KERNEL_VERSION="$(uname -r)"
 KERNEL_MAJOR="${KERNEL_VERSION%%.*}"
-KERNEL_MINOR="${KERNEL_VERSION#$KERNEL_MAJOR.}"
+KERNEL_MINOR="${KERNEL_VERSION#"$KERNEL_MAJOR".}"
 KERNEL_MINOR="${KERNEL_MINOR%%.*}"
 
 ARCH=$(uname -m)
@@ -567,11 +567,6 @@ function setup_bundle() {
 
 function setup_busybox() {
 	setup_bundle "$BUSYBOX_IMAGE"
-}
-
-function setup_hello() {
-	setup_bundle "$HELLO_IMAGE"
-	update_config '(.. | select(.? == "sh")) |= "/hello"'
 }
 
 function setup_debian() {

@@ -7,7 +7,7 @@ git remote add upstream git@github.com:opencontainers/runc.git
 
 git fetch upstream
 
-git merge v1.1.4
+git merge v1.1.5
 ```
 
 ## build
