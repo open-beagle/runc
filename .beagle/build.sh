@@ -2,11 +2,10 @@
 
 set -ex
 
-git apply .beagle/v1.1-add-mips64el-support.patch
-
 mkdir -p release
 
 export GOARCH=amd64
+export BUILDTAGS=""
 make static
 mv runc release/runc-linux-$GOARCH
 
@@ -28,5 +27,11 @@ export GOARCH=mips64le
 export CC=mips64el-linux-gnuabi64-gcc
 export LD_LIBRARY_PATH=/opt/libseccomp/mips64el/lib
 export PKG_CONFIG_PATH=/opt/libseccomp/mips64el/lib/pkgconfig
+make static
+mv runc release/runc-linux-$GOARCH
+
+export GOARCH=loong64
+export CC=loongarch64-linux-gnu-gcc
+export BUILDTAGS=""
 make static
 mv runc release/runc-linux-$GOARCH

@@ -1,0 +1,65 @@
+From 738637100848e5cf03b60e0f91bf537f8e45c34f Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Mon, 10 Apr 2023 16:59:31 +0800
+Subject: [PATCH] add loong64 support
+
+---
+ libcontainer/seccomp/config.go                | 1 +
+ libcontainer/seccomp/patchbpf/enosys_linux.go | 8 ++++++++
+ libcontainer/system/syscall_linux_64.go       | 4 ++--
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/libcontainer/seccomp/config.go b/libcontainer/seccomp/config.go
+index 98e08e8f..45bf2622 100644
+--- a/libcontainer/seccomp/config.go
++++ b/libcontainer/seccomp/config.go
+@@ -68,6 +68,7 @@ var archs = map[string]string{
+ 	"SCMP_ARCH_PPC64LE":     "ppc64le",
+ 	"SCMP_ARCH_S390":        "s390",
+ 	"SCMP_ARCH_S390X":       "s390x",
++	"SCMP_ARCH_LOONGARCH64": "loong64",
+ }
+ 
+ // KnownArchs returns the list of the known archs.
+diff --git a/libcontainer/seccomp/patchbpf/enosys_linux.go b/libcontainer/seccomp/patchbpf/enosys_linux.go
+index 7d4ec6a4..c2d43dd9 100644
+--- a/libcontainer/seccomp/patchbpf/enosys_linux.go
++++ b/libcontainer/seccomp/patchbpf/enosys_linux.go
+@@ -48,6 +48,13 @@ const uintptr_t C_FILTER_FLAG_LOG = SECCOMP_FILTER_FLAG_LOG;
+ #endif
+ const uintptr_t C_FILTER_FLAG_NEW_LISTENER = SECCOMP_FILTER_FLAG_NEW_LISTENER;
+ 
++#ifndef AUDIT_ARCH_LOONGARCH64
++#ifndef EM_LOONGARCH
++# define EM_LOONGARCH 258
++#endif
++# define AUDIT_ARCH_LOONGARCH64 (EM_LOONGARCH|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
++#endif
++
+ // We use the AUDIT_ARCH_* values because those are the ones used by the kernel
+ // and SCMP_ARCH_* sometimes has fake values (such as SCMP_ARCH_X32). But we
+ // use <seccomp.h> so we get libseccomp's fallback definitions of AUDIT_ARCH_*.
+@@ -67,6 +74,7 @@ const uint32_t C_AUDIT_ARCH_PPC64        = AUDIT_ARCH_PPC64;
+ const uint32_t C_AUDIT_ARCH_PPC64LE      = AUDIT_ARCH_PPC64LE;
+ const uint32_t C_AUDIT_ARCH_S390         = AUDIT_ARCH_S390;
+ const uint32_t C_AUDIT_ARCH_S390X        = AUDIT_ARCH_S390X;
++const uint32_t C_AUDIT_ARCH_LOONGARCH64  = AUDIT_ARCH_LOONGARCH64;
+ */
+ import "C"
+ 
+diff --git a/libcontainer/system/syscall_linux_64.go b/libcontainer/system/syscall_linux_64.go
+index 1ed0dba1..ccb9340d 100644
+--- a/libcontainer/system/syscall_linux_64.go
++++ b/libcontainer/system/syscall_linux_64.go
+@@ -1,6 +1,6 @@
+-//go:build linux && (arm64 || amd64 || mips || mipsle || mips64 || mips64le || ppc || ppc64 || ppc64le || riscv64 || s390x)
++//go:build linux && (arm64 || amd64 || mips || mipsle || mips64 || mips64le || ppc || ppc64 || ppc64le || riscv64 || s390x || loong64)
+ // +build linux
+-// +build arm64 amd64 mips mipsle mips64 mips64le ppc ppc64 ppc64le riscv64 s390x
++// +build arm64 amd64 mips mipsle mips64 mips64le ppc ppc64 ppc64le riscv64 s390x loong64
+ 
+ package system
+ 
+-- 
+2.39.2
+

@@ -10,28 +10,46 @@ git fetch upstream
 git merge v1.1.5
 ```
 
-## build
+## prepare
 
 ```bash
-# x86_64
-docker run -it --rm \
--v $PWD/:/go/src/github.com/opencontainers/runc \
--w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/runc-build:1.1.1 \
-bash .beagle/build.sh
-
-# x86_64
-# /go/src/gitlab.wodcloud.com/cloud/runc/Dockerfile
-
 ## 首先打个补丁，再编译runc-build
 git apply .beagle/v1.1-add-mips64el-support.patch
 
 docker build \
-  --build-arg GO_VERSION=1.19-bullseye \
-  --tag registry.cn-qingdao.aliyuncs.com/wod/runc-build:1.1.1 \
+  --build-arg GO_VERSION=1.20 \
+  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build \
   --file ./.beagle/runc-build.dockerfile .
 
-docker push registry.cn-qingdao.aliyuncs.com/wod/runc-build:1.1.1
+docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build
+```
+
+## build
+
+```bash
+# loong64 patch
+## golang.org/x/sys/unix
+## libcontainer/system/syscall_linux_64.go
+git apply .beagle/v1.1-add-loong64-support.patch
+
+# loong64 patch
+## github.com/seccomp/libseccomp-golang
+git apply .beagle/v1.1-add-loong64-support-seccomp-golang.patch
+
+# loong64 patch
+## go.mod
+## go 1.17 -> go 1.16
+## golang.org/x/sys v0.7.0 > golang.org/x/sys v0.0.0-20211116061358-0a5406a5449c
+## go mod tidy
+## go mod vendor
+git apply .beagle/v1.1-add-loong64-support-plus.patch
+
+# x86_64 cross
+docker run -it --rm \
+-v $PWD/:/go/src/github.com/opencontainers/runc \
+-w /go/src/github.com/opencontainers/runc \
+registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build \
+bash .beagle/build.sh
 ```
 
 ## cache
@@ -43,7 +61,8 @@ docker run --rm \
   -e PLUGIN_ENDPOINT=$PLUGIN_ENDPOINT \
   -e PLUGIN_ACCESS_KEY=$PLUGIN_ACCESS_KEY \
   -e PLUGIN_SECRET_KEY=$PLUGIN_SECRET_KEY \
-  -e PLUGIN_PATH="/cache/open-beagle/runc" \
+  -e DRONE_REPO_OWNER="open-beagle" \
+  -e DRONE_REPO_NAME="runc" \
   -e PLUGIN_MOUNT="./.git" \
   -v $(pwd):$(pwd) \
   -w $(pwd) \
@@ -55,7 +74,8 @@ docker run --rm \
   -e PLUGIN_ENDPOINT=$PLUGIN_ENDPOINT \
   -e PLUGIN_ACCESS_KEY=$PLUGIN_ACCESS_KEY \
   -e PLUGIN_SECRET_KEY=$PLUGIN_SECRET_KEY \
-  -e PLUGIN_PATH="/cache/open-beagle/runc" \
+  -e DRONE_REPO_OWNER="open-beagle" \
+  -e DRONE_REPO_NAME="runc" \
   -v $(pwd):$(pwd) \
   -w $(pwd) \
   registry.cn-qingdao.aliyuncs.com/wod/devops-s3-cache:1.0
