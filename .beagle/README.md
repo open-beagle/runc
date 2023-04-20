@@ -17,7 +17,7 @@ git merge v1.1.5
 git apply .beagle/v1.1-add-mips64el-support.patch
 
 docker build \
-  --build-arg GO_VERSION=1.20 \
+  --build-arg GO_VERSION=1.19-loongnix \
   --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build \
   --file ./.beagle/runc-build.dockerfile .
 
