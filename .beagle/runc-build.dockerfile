@@ -1,6 +1,6 @@
 ARG GO_VERSION=1.17
 ARG BATS_VERSION=v1.3.0
-ARG LIBSECCOMP_VERSION=2.5.4
+ARG LIBSECCOMP_VERSION=2.5.5
 
 FROM registry.cn-qingdao.aliyuncs.com/wod/golang:${GO_VERSION}
 ARG DEBIAN_FRONTEND=noninteractive
@@ -31,6 +31,8 @@ RUN KEYFILE=/usr/share/keyrings/criu-repo-keyring.gpg; \
         sshfs \
         sudo \
         uidmap \
+        autoconf \
+        libtool \
     && apt-get clean \
     && rm -rf /var/cache/apt /var/lib/apt/lists/* /etc/apt/sources.list.d/*.list
 
@@ -53,7 +55,7 @@ RUN cd /tmp \
 ARG LIBSECCOMP_VERSION
 COPY script/* /tmp/script/
 RUN mkdir -p /opt/libseccomp \
-    && /tmp/script/seccomp.sh "$LIBSECCOMP_VERSION" /opt/libseccomp arm64 ppc64le mips64el loong64
+    && /tmp/script/seccomp.sh "$LIBSECCOMP_VERSION" /opt/libseccomp arm64 ppc64le mips64le loong64
 ENV LIBSECCOMP_VERSION=$LIBSECCOMP_VERSION
 ENV LD_LIBRARY_PATH=/opt/libseccomp/lib
 ENV PKG_CONFIG_PATH=/opt/libseccomp/lib/pkgconfig

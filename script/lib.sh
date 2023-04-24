@@ -26,8 +26,8 @@ function set_cross_vars() {
 	s390x)
 		HOST=s390x-linux-gnu
 		;;
-	mips64el)
-		HOST=mips64el-linux-gnu
+	mips64le)
+		HOST=mips64el-linux-gnuabi64
 		;;
 	loong64)
 		HOST=loongarch64-linux-gnu

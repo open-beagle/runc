@@ -25,8 +25,8 @@ mv runc release/runc-linux-$GOARCH
 
 export GOARCH=mips64le
 export CC=mips64el-linux-gnuabi64-gcc
-export LD_LIBRARY_PATH=/opt/libseccomp/mips64el/lib
-export PKG_CONFIG_PATH=/opt/libseccomp/mips64el/lib/pkgconfig
+export LD_LIBRARY_PATH=/opt/libseccomp/mips64le/lib
+export PKG_CONFIG_PATH=/opt/libseccomp/mips64le/lib/pkgconfig
 make static
 mv runc release/runc-linux-$GOARCH
 
