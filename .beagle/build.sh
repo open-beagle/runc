@@ -5,7 +5,6 @@ set -ex
 mkdir -p release
 
 export GOARCH=amd64
-export BUILDTAGS=""
 make static
 mv runc release/runc-linux-$GOARCH
 
