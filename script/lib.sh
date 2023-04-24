@@ -26,6 +26,12 @@ function set_cross_vars() {
 	s390x)
 		HOST=s390x-linux-gnu
 		;;
+	mips64el)
+		HOST=mips64el-linux-gnu
+		;;
+	loong64)
+		HOST=loongarch64-linux-gnu
+		;;
 	*)
 		echo "set_cross_vars: unsupported architecture: $1" >&2
 		exit 1

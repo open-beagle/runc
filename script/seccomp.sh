@@ -25,8 +25,7 @@ function build_libseccomp() {
 	local tar="libseccomp-${ver}.tar.gz"
 
 	# Download, check, and extract.
-	wget "https://github.com/seccomp/libseccomp/releases/download/v${ver}/${tar}"{,.asc}
-	sha256sum --strict --check - <<<"${SECCOMP_SHA256[${ver}]} *${tar}"
+	wget "https://cache.wodcloud.com/kubernetes/k8s/libseccomp/${tar}"
 
 	local srcdir
 	srcdir="$(mktemp -d)"
@@ -54,7 +53,7 @@ function build_libseccomp() {
 	# Place the source tarball to $dest/src.
 	popd || return
 	mkdir "$dest"/src
-	mv "$tar"{,.asc} "$dest"/src
+	mv "$tar" "$dest"/src
 }
 
 if [ $# -lt 2 ]; then
