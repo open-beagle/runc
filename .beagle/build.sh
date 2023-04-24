@@ -32,6 +32,7 @@ mv runc release/runc-linux-$GOARCH
 
 export GOARCH=loong64
 export CC=loongarch64-linux-gnu-gcc
-export BUILDTAGS=""
+export LD_LIBRARY_PATH=/opt/libseccomp/loong64/lib
+export PKG_CONFIG_PATH=/opt/libseccomp/loong64/lib/pkgconfig
 make static
 mv runc release/runc-linux-$GOARCH

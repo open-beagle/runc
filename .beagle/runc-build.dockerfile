@@ -53,7 +53,7 @@ RUN cd /tmp \
 ARG LIBSECCOMP_VERSION
 COPY script/* /tmp/script/
 RUN mkdir -p /opt/libseccomp \
-    && /tmp/script/seccomp.sh "$LIBSECCOMP_VERSION" /opt/libseccomp arm64 ppc64le mips64el
+    && /tmp/script/seccomp.sh "$LIBSECCOMP_VERSION" /opt/libseccomp arm64 ppc64le mips64el loong64
 ENV LIBSECCOMP_VERSION=$LIBSECCOMP_VERSION
 ENV LD_LIBRARY_PATH=/opt/libseccomp/lib
 ENV PKG_CONFIG_PATH=/opt/libseccomp/lib/pkgconfig

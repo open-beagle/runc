@@ -1,26 +1,53 @@
-From 56fa8e571f033c6fac18b3beef03ebfb310eda4d Mon Sep 17 00:00:00 2001
+From f811d764e8af998cb596548656afe369813ca8d7 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Sun, 10 Apr 2022 11:55:36 +0800
+Date: Mon, 24 Apr 2023 10:57:06 +0800
 Subject: [PATCH] add mips64el support
 
 ---
- script/lib.sh | 3 +++
- 1 file changed, 3 insertions(+)
+ script/lib.sh     | 6 ++++++
+ script/seccomp.sh | 5 ++---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/script/lib.sh b/script/lib.sh
-index 9afa0b4c..e821257f 100644
+index 9afa0b4c..15a21bbf 100644
 --- a/script/lib.sh
 +++ b/script/lib.sh
-@@ -26,6 +26,9 @@ function set_cross_vars() {
+@@ -26,6 +26,12 @@ function set_cross_vars() {
  	s390x)
  		HOST=s390x-linux-gnu
  		;;
 +	mips64el)
-+		HOST=mips64el-linux-gnuabi64
++		HOST=mips64el-linux-gnu
++		;;
++	loong64)
++		HOST=loongarch64-linux-gnu
 +		;;
  	*)
  		echo "set_cross_vars: unsupported architecture: $1" >&2
  		exit 1
+diff --git a/script/seccomp.sh b/script/seccomp.sh
+index beea612a..b124be5d 100755
+--- a/script/seccomp.sh
++++ b/script/seccomp.sh
+@@ -25,8 +25,7 @@ function build_libseccomp() {
+ 	local tar="libseccomp-${ver}.tar.gz"
+ 
+ 	# Download, check, and extract.
+-	wget "https://github.com/seccomp/libseccomp/releases/download/v${ver}/${tar}"{,.asc}
+-	sha256sum --strict --check - <<<"${SECCOMP_SHA256[${ver}]} *${tar}"
++	wget "https://cache.wodcloud.com/kubernetes/k8s/libseccomp/${tar}"
+ 
+ 	local srcdir
+ 	srcdir="$(mktemp -d)"
+@@ -54,7 +53,7 @@ function build_libseccomp() {
+ 	# Place the source tarball to $dest/src.
+ 	popd || return
+ 	mkdir "$dest"/src
+-	mv "$tar"{,.asc} "$dest"/src
++	mv "$tar" "$dest"/src
+ }
+ 
+ if [ $# -lt 2 ]; then
 -- 
-2.25.1
+2.39.2
 
