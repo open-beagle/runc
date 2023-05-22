@@ -28,22 +28,9 @@ docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build
 ## build
 
 ```bash
-# loong64 patch
-## golang.org/x/sys/unix
-## libcontainer/system/syscall_linux_64.go
-git apply .beagle/v1.1-add-loong64-support.patch
-
-# loong64 patch
-## github.com/seccomp/libseccomp-golang
-git apply .beagle/v1.1-add-loong64-support-seccomp-golang.patch
-
-# loong64 patch
-## go.mod
-## go 1.17 -> go 1.16
-## golang.org/x/sys v0.7.0 > golang.org/x/sys v0.0.0-20211116061358-0a5406a5449c
-## go mod tidy
-## go mod vendor
-git apply .beagle/v1.1-add-loong64-support-plus.patch
+# loong64 patch 翟小娟@龙芯
+git apply .beagle/v1.1.5-add-seccomp-support-for-loong64.patch
+git apply .beagle/v1.1.5-update-sys-to-support-loong64.patch
 
 # x86_64 cross
 docker run -it --rm \

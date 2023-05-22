@@ -38,9 +38,8 @@ steps:
   - name: golang
     image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build
     commands:
-      - git apply .beagle/v1.1-add-loong64-support.patch
-      - git apply .beagle/v1.1-add-loong64-support-seccomp-golang.patch
-      - git apply .beagle/v1.1-add-loong64-support-plus.patch
+      - git apply .beagle/v1.1.5-add-seccomp-support-for-loong64.patch
+      - git apply .beagle/v1.1.5-update-sys-to-support-loong64.patch
       - bash .beagle/build.sh
 
   - name: docker-amd64
@@ -126,7 +125,7 @@ steps:
         path: /var/run/docker.sock
     settings:
       dockerfile: .beagle/dockerfile
-      base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-mips64le
+      base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
       cwd: release
       repo: wod/runc
       version: v1.1.5
