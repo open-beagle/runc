@@ -36,8 +36,9 @@ steps:
         from_secret: SOCKS5_PROXY
 
   - name: golang
-    image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build
+    image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.7-build
     commands:
+      - git apply .beagle/v1-versoin.patch
       - git apply .beagle/v1.1.7-add-seccomp-support-for-loong64.patch
       - bash .beagle/build.sh
 
@@ -51,7 +52,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
       cwd: release
       repo: wod/runc
-      version: v1.1.5
+      version: v1.1.7
       channel: amd64
       args: 'TARGETOS=linux,TARGETARCH=amd64'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -70,7 +71,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-arm64
       cwd: release
       repo: wod/runc
-      version: v1.1.5
+      version: v1.1.7
       channel: arm64
       args: 'TARGETOS=linux,TARGETARCH=arm64'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -89,7 +90,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-ppc64le
       cwd: release
       repo: wod/runc
-      version: v1.1.5
+      version: v1.1.7
       channel: ppc64le
       args: 'TARGETOS=linux,TARGETARCH=ppc64le'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -108,7 +109,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-mips64le
       cwd: release
       repo: wod/runc
-      version: v1.1.5
+      version: v1.1.7
       channel: mips64le
       args: 'TARGETOS=linux,TARGETARCH=mips64le'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -127,7 +128,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
       cwd: release
       repo: wod/runc
-      version: v1.1.5
+      version: v1.1.7
       channel: loong64
       args: 'TARGETOS=linux,TARGETARCH=loong64'
       registry: registry.cn-qingdao.aliyuncs.com

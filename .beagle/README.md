@@ -7,7 +7,7 @@ git remote add upstream git@github.com:opencontainers/runc.git
 
 git fetch upstream
 
-git merge v1.1.5
+git merge v1.1.7
 ```
 
 ## prepare
@@ -18,25 +18,27 @@ git apply .beagle/v1.1-add-mips64el-support.patch
 
 docker build \
   --no-cache \
-  --build-arg GO_VERSION=1.19-loongnix \
-  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build \
+  --build-arg GO_VERSION=1.20-loongnix \
+  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.7-build \
   --file ./.beagle/runc-build.dockerfile .
 
-docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build
+docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.7-build
 ```
 
 ## build
 
 ```bash
+# version patch 版本号补丁
+git apply .beagle/v1-versoin.patch
+
 # loong64 patch 翟小娟@龙芯
-git apply .beagle/v1.1.5-add-seccomp-support-for-loong64.patch
-git apply .beagle/v1.1.5-update-sys-to-support-loong64.patch
+git apply .beagle/v1.1.7-add-seccomp-support-for-loong64.patch
 
 # x86_64 cross
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build \
+registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.7-build \
 bash .beagle/build.sh
 ```
 

@@ -1,0 +1,19 @@
+From c7c56cd4bdc7e1d3013cc277de62ba2f076da7d9 Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Tue, 30 May 2023 11:52:52 +0800
+Subject: [PATCH] versoin
+
+---
+ VERSION | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/VERSION b/VERSION
+index 2bf1ca5f..8ed4aae1 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-1.1.7
++1.1.7-beagle
+-- 
+2.39.2
+
