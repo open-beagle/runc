@@ -38,8 +38,7 @@ steps:
   - name: golang
     image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.5-build
     commands:
-      - git apply .beagle/v1.1.5-add-seccomp-support-for-loong64.patch
-      - git apply .beagle/v1.1.5-update-sys-to-support-loong64.patch
+      - git apply .beagle/v1.1.7-add-seccomp-support-for-loong64.patch
       - bash .beagle/build.sh
 
   - name: docker-amd64
