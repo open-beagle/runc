@@ -6,21 +6,86 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased 1.1.z]
 
+## [1.1.7] - 2023-04-26
+
+> Ночевала тучка золотая на груди утеса-великана.
+
+### Fixed
+
+* When used with systemd v240+, systemd cgroup drivers no longer skip
+  `DeviceAllow` rules if the device does not exist (a regression introduced
+  in runc 1.1.3). This fix also reverts the workaround added in runc 1.1.5,
+  removing an extra warning emitted by runc run/start. (#3845, #3708, #3671)
+
+### Added
+
+* The source code now has a new file, `runc.keyring`, which contains the keys
+  used to sign runc releases. (#3838)
+
+## [1.1.6] - 2023-04-11
+
+> In this world nothing is certain but death and taxes.
+
+### Compatibility
+
+* This release can no longer be built from sources using Go 1.16. Using a
+  latest maintained Go 1.20.x or Go 1.19.x release is recommended.
+  Go 1.17 can still be used.
+
+### Fixed
+
+* systemd cgroup v1 and v2 drivers were deliberately ignoring `UnitExist` error
+  from systemd while trying to create a systemd unit, which in some scenarios
+  may result in a container not being added to the proper systemd unit and
+  cgroup. (#3780, #3806)
+* systemd cgroup v2 driver was incorrectly translating cpuset range from spec's
+  `resources.cpu.cpus` to systemd unit property (`AllowedCPUs`) in case of more
+  than 8 CPUs, resulting in the wrong AllowedCPUs setting. (#3808)
+* systemd cgroup v1 driver was prefixing container's cgroup path with the path
+  of PID 1 cgroup, resulting in inability to place PID 1 in a non-root cgroup.
+  (#3811)
+* runc run/start may return "permission denied" error when starting a rootless
+  container when the file to be executed does not have executable bit set for
+  the user, not taking the `CAP_DAC_OVERRIDE` capability into account. This is
+  a regression in runc 1.1.4, as well as in Go 1.20 and 1.20.1 (#3715, #3817)
+* cgroup v1 drivers are now aware of `misc` controller. (#3823)
+* Various CI fixes and improvements, mostly to ensure Go 1.19.x and Go 1.20.x
+  compatibility.
+
 ## [1.1.5] - 2023-03-29
 
 > 囚われた屈辱は
 > 反撃の嚆矢だ
 
+### Security
+
+The following CVEs were fixed in this release:
+
+* [CVE-2023-25809][] is a vulnerability involving rootless containers where
+  (under specific configurations), the container would have write access to the
+  `/sys/fs/cgroup/user.slice/...` cgroup hierarchy. No other hierarchies on the
+  host were affected. This vulnerability was discovered by Akihiro Suda.
+
+* [CVE-2023-27561][] was a regression in our protections against tricky `/proc`
+  and `/sys` configurations (where the container mountpoint is a symlink)
+  causing us to be tricked into incorrectly configuring the container, which
+  effectively re-introduced [CVE-2019-19921][]. This regression was present
+  from v1.0.0-rc95 to v1.1.4 and was discovered by @Beuc. (#3785)
+
+* [CVE-2023-28642][] is a different attack vector using the same regression
+  as in [CVE-2023-27561][]. This was reported by Lei Wang.
+
+[CVE-2019-19921]: https://github.com/advisories/GHSA-fh74-hm69-rqjw
+[CVE-2023-25809]: https://github.com/opencontainers/runc/security/advisories/GHSA-m8cg-xc2p-r3fc
+[CVE-2023-27561]: https://github.com/advisories/GHSA-vpvm-3wq2-2wvm
+[CVE-2023-28642]: https://github.com/opencontainers/runc/security/advisories/GHSA-g2j6-57v7-gm8c
+
 ### Fixed
 
-* Prohibit container's `/proc` and `/sys` to be symlinks (CVE-2019-19921,
-  CVE-2023-27561, CVE-2023-28642, #3785)
-* rootless: rework /sys/fs/cgroup mounts to avoid exposing the host's cgroup
-  hierarchy into the container. (CVE-2023-25809)
 * Fix the inability to use `/dev/null` when inside a container. (#3620)
 * Fix changing the ownership of host's `/dev/null` caused by fd redirection
   (a regression in 1.1.1). (#3674, #3731)
-* Fix rare runc exec/enter unshare error on older kernels, inlcuding
+* Fix rare runc exec/enter unshare error on older kernels, including
   CentOS < 7.7. (#3776)
 * nsexec: Check for errors in `write_log()`. (#3721)
 * Various CI fixes and updates. (#3618, #3630, #3640, #3729)
@@ -345,8 +410,10 @@ implementation (libcontainer) is *not* covered by this policy.
 [1.0.1]: https://github.com/opencontainers/runc/compare/v1.0.0...v1.0.1
 
 <!-- 1.1.z patch releases -->
-[Unreleased 1.1.z]: https://github.com/opencontainers/runc/compare/v1.1.5...release-1.1
-[1.1.5]: https://github.com/opencontainers/runc/compare/v1.1.3...v1.1.5
+[Unreleased 1.1.z]: https://github.com/opencontainers/runc/compare/v1.1.7...release-1.1
+[1.1.7]: https://github.com/opencontainers/runc/compare/v1.1.6...v1.1.7
+[1.1.6]: https://github.com/opencontainers/runc/compare/v1.1.5...v1.1.6
+[1.1.5]: https://github.com/opencontainers/runc/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/opencontainers/runc/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/opencontainers/runc/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/opencontainers/runc/compare/v1.1.1...v1.1.2
