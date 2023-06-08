@@ -36,15 +36,6 @@ RUN dpkg --add-architecture arm64 \
 # repository if the current uid does not have an entry in /etc/passwd.
 RUN useradd -u1000 -m -d/home/rootless -s/bin/bash rootless
 
-# install bats
-ARG BATS_VERSION
-RUN cd /tmp \
-    && git clone https://github.com/bats-core/bats-core.git \
-    && cd bats-core \
-    && git reset --hard "${BATS_VERSION}" \
-    && ./install.sh /usr/local \
-    && rm -rf /tmp/bats-core
-
 # install libseccomp
 ARG LIBSECCOMP_VERSION
 COPY script/* /tmp/script/
