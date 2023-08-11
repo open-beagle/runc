@@ -4,6 +4,8 @@ set -ex
 
 mkdir -p release
 
+export COMMIT=$(git rev-parse --short HEAD 2> /dev/null || true)
+
 export GOARCH=amd64
 make static
 strip runc
