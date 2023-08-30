@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version: [1.17.x, 1.19.x, 1.20.x]
+        go-version: [1.17.x, 1.20.x, 1.21.x]
         rootless: ["rootless", ""]
         race: ["-race", ""]
         criu: [""]
@@ -60,7 +60,7 @@ jobs:
         rm -rf ~/criu
 
     - name: install go ${{ matrix.go-version }}
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
 
@@ -70,7 +70,7 @@ jobs:
     - name: install bats
       uses: mig4/setup-bats@v1
       with:
-        bats-version: 1.3.0
+        bats-version: 1.9.0
 
     - name: unit test
       if: matrix.rootless != 'rootless'
@@ -119,10 +119,9 @@ jobs:
         sudo apt -q install libseccomp-dev libseccomp-dev:i386 gcc-multilib criu
 
     - name: install go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         go-version: 1.x # Latest stable
 
     - name: unit test
-      # cgo is disabled by default when cross-compiling
-      run: sudo -E PATH="$PATH" -- make GOARCH=386 CGO_ENABLED=1 CGO_CFLAGS=-fno-stack-protector localunittest
+      run: sudo -E PATH="$PATH" -- make GOARCH=386 localunittest
