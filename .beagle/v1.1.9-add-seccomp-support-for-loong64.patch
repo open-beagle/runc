@@ -1,24 +1,24 @@
-From b16eb39aaae1d7ea205f18544a3408ce98c508e1 Mon Sep 17 00:00:00 2001
-From: zhaixiaojuan <zhaixiaojuan@loongson.cn>
-Date: Fri, 19 May 2023 03:51:00 -0400
-Subject: [PATCH 2/2] Add seccomp support for loong64
+From 77d7b2807bc098df9f9c322b51fee7fe27d1fa68 Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Wed, 30 Aug 2023 11:43:52 +0800
+Subject: [PATCH] x
 
 ---
- libcontainer/seccomp/config.go                        |  1 +
- libcontainer/seccomp/patchbpf/enosys_linux.go         |  3 +++
- libcontainer/seccomp/patchbpf/enosys_linux_test.go    |  1 +
- libcontainer/system/syscall_linux_64.go               |  4 ++--
- .../opencontainers/runtime-spec/specs-go/config.go    |  1 +
- .../github.com/seccomp/libseccomp-golang/seccomp.go   |  6 ++++++
- .../seccomp/libseccomp-golang/seccomp_internal.go     | 11 ++++++++++-
- 7 files changed, 24 insertions(+), 3 deletions(-)
+ libcontainer/seccomp/config.go                |  1 +
+ libcontainer/seccomp/patchbpf/enosys_linux.go |  3 +++
+ .../seccomp/patchbpf/enosys_linux_test.go     |  1 +
+ libcontainer/system/syscall_linux_64.go       |  4 ++--
+ .../runtime-spec/specs-go/config.go           |  1 +
+ .../seccomp/libseccomp-golang/seccomp.go      | 19 +++++++++++++------
+ .../libseccomp-golang/seccomp_internal.go     | 11 ++++++++++-
+ 7 files changed, 31 insertions(+), 9 deletions(-)
 
 diff --git a/libcontainer/seccomp/config.go b/libcontainer/seccomp/config.go
-index 98e08e8f..45bf2622 100644
+index 2b15576a..841f9d93 100644
 --- a/libcontainer/seccomp/config.go
 +++ b/libcontainer/seccomp/config.go
-@@ -68,6 +68,7 @@ var archs = map[string]string{
- 	"SCMP_ARCH_PPC64LE":     "ppc64le",
+@@ -69,6 +69,7 @@ var archs = map[string]string{
+ 	"SCMP_ARCH_RISCV64":     "riscv64",
  	"SCMP_ARCH_S390":        "s390",
  	"SCMP_ARCH_S390X":       "s390x",
 +	"SCMP_ARCH_LOONGARCH64": "loong64",
@@ -26,21 +26,21 @@ index 98e08e8f..45bf2622 100644
  
  // KnownArchs returns the list of the known archs.
 diff --git a/libcontainer/seccomp/patchbpf/enosys_linux.go b/libcontainer/seccomp/patchbpf/enosys_linux.go
-index 7d4ec6a4..c4e79ef0 100644
+index 6376512b..391c319e 100644
 --- a/libcontainer/seccomp/patchbpf/enosys_linux.go
 +++ b/libcontainer/seccomp/patchbpf/enosys_linux.go
-@@ -67,6 +67,7 @@ const uint32_t C_AUDIT_ARCH_PPC64        = AUDIT_ARCH_PPC64;
- const uint32_t C_AUDIT_ARCH_PPC64LE      = AUDIT_ARCH_PPC64LE;
+@@ -75,6 +75,7 @@ const uint32_t C_AUDIT_ARCH_PPC64LE      = AUDIT_ARCH_PPC64LE;
  const uint32_t C_AUDIT_ARCH_S390         = AUDIT_ARCH_S390;
  const uint32_t C_AUDIT_ARCH_S390X        = AUDIT_ARCH_S390X;
+ const uint32_t C_AUDIT_ARCH_RISCV64      = AUDIT_ARCH_RISCV64;
 +const uint32_t C_AUDIT_ARCH_LOONGARCH64  = AUDIT_ARCH_LOONGARCH64;
  */
  import "C"
  
-@@ -202,6 +203,8 @@ func archToNative(arch libseccomp.ScmpArch) (nativeArch, error) {
- 		return nativeArch(C.C_AUDIT_ARCH_S390), nil
- 	case libseccomp.ArchS390X:
+@@ -212,6 +213,8 @@ func archToNative(arch libseccomp.ScmpArch) (nativeArch, error) {
  		return nativeArch(C.C_AUDIT_ARCH_S390X), nil
+ 	case libseccomp.ArchRISCV64:
+ 		return nativeArch(C.C_AUDIT_ARCH_RISCV64), nil
 +	case libseccomp.ArchLOONGARCH64:
 +		return nativeArch(C.C_AUDIT_ARCH_LOONGARCH64), nil
  	default:
@@ -84,10 +84,46 @@ index 6a7a91e5..624f3fa8 100644
  
  // LinuxSeccompAction taken upon Seccomp rule match
 diff --git a/vendor/github.com/seccomp/libseccomp-golang/seccomp.go b/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
-index 8dad12fd..25523945 100644
+index 8dad12fd..4ed78d6a 100644
 --- a/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
 +++ b/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
-@@ -174,6 +174,8 @@ const (
+@@ -82,7 +82,6 @@ type ScmpFd int32
+ // Arch:         the filter architecture
+ // InstrPointer: address of the instruction that triggered a notification
+ // Args:         arguments (up to 6) for the syscall
+-//
+ type ScmpNotifData struct {
+ 	Syscall      ScmpSyscall `json:"syscall,omitempty"`
+ 	Arch         ScmpArch    `json:"arch,omitempty"`
+@@ -97,7 +96,6 @@ type ScmpNotifData struct {
+ // Pid:   process that triggered the notification event
+ // Flags: filter flags (see seccomp(2))
+ // Data:  system call context that triggered the notification
+-//
+ type ScmpNotifReq struct {
+ 	ID    uint64        `json:"id,omitempty"`
+ 	Pid   uint32        `json:"pid,omitempty"`
+@@ -110,12 +108,15 @@ type ScmpNotifReq struct {
+ //
+ // ID:    notification ID (must match the corresponding ScmpNotifReq ID)
+ // Error: must be 0 if no error occurred, or an error constant from package
+-//        syscall (e.g., syscall.EPERM, etc). In the latter case, it's used
+-//        as an error return from the syscall that created the notification.
++//
++//	syscall (e.g., syscall.EPERM, etc). In the latter case, it's used
++//	as an error return from the syscall that created the notification.
++//
+ // Val:   return value for the syscall that created the notification. Only
+-//        relevant if Error is 0.
+-// Flags: userspace notification response flag (e.g., NotifRespFlagContinue)
+ //
++//	relevant if Error is 0.
++//
++// Flags: userspace notification response flag (e.g., NotifRespFlagContinue)
+ type ScmpNotifResp struct {
+ 	ID    uint64 `json:"id,omitempty"`
+ 	Error int32  `json:"error,omitempty"`
+@@ -174,6 +175,8 @@ const (
  	ArchPARISC64
  	// ArchRISCV64 represents RISCV64
  	ArchRISCV64
@@ -96,7 +132,7 @@ index 8dad12fd..25523945 100644
  )
  
  const (
-@@ -305,6 +307,8 @@ func GetArchFromString(arch string) (ScmpArch, error) {
+@@ -305,6 +308,8 @@ func GetArchFromString(arch string) (ScmpArch, error) {
  		return ArchPARISC64, nil
  	case "riscv64":
  		return ArchRISCV64, nil
@@ -105,7 +141,7 @@ index 8dad12fd..25523945 100644
  	default:
  		return ArchInvalid, fmt.Errorf("cannot convert unrecognized string %q", arch)
  	}
-@@ -351,6 +355,8 @@ func (a ScmpArch) String() string {
+@@ -351,6 +356,8 @@ func (a ScmpArch) String() string {
  		return "parisc64"
  	case ArchRISCV64:
  		return "riscv64"
@@ -165,5 +201,5 @@ index df4dfb7e..1997fb39 100644
  		return C.C_ARCH_NATIVE
  	default:
 -- 
-2.27.0
+2.39.2
 
