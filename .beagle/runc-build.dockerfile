@@ -3,13 +3,19 @@ ARG BATS_VERSION=v1.3.0
 ARG LIBSECCOMP_VERSION=2.5.5
 
 FROM registry.cn-qingdao.aliyuncs.com/wod/golang:${GO_VERSION}
+ARG DEBIAN_FRONTEND=noninteractive
+ARG CRIU_REPO=https://download.opensuse.org/repositories/devel:/tools:/criu/Debian_12
 
-RUN dpkg --add-architecture arm64 \
+RUN KEYFILE=/usr/share/keyrings/criu-repo-keyring.gpg; \
+    wget -nv $CRIU_REPO/Release.key -O- | gpg --dearmor > "$KEYFILE" \
+    && echo "deb [signed-by=$KEYFILE] $CRIU_REPO/ /" > /etc/apt/sources.list.d/criu.list \
+    && dpkg --add-architecture arm64 \
     && dpkg --add-architecture ppc64el \
     && dpkg --add-architecture mips64el \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
+        criu \
         crossbuild-essential-arm64 \
         crossbuild-essential-ppc64el \
         crossbuild-essential-mips64el \
@@ -25,8 +31,6 @@ RUN dpkg --add-architecture arm64 \
         sshfs \
         sudo \
         uidmap \
-        autoconf \
-        libtool \
     && apt-get clean \
     && rm -rf /var/cache/apt /var/lib/apt/lists/* /etc/apt/sources.list.d/*.list
 
@@ -40,7 +44,7 @@ RUN useradd -u1000 -m -d/home/rootless -s/bin/bash rootless
 ARG LIBSECCOMP_VERSION
 COPY script/* /tmp/script/
 RUN mkdir -p /opt/libseccomp \
-    && /tmp/script/seccomp.sh "$LIBSECCOMP_VERSION" /opt/libseccomp arm64 ppc64le mips64le loong64
+    && /tmp/script/seccomp.sh "$LIBSECCOMP_VERSION" /opt/libseccomp arm64 ppc64le mips64le
 ENV LIBSECCOMP_VERSION=$LIBSECCOMP_VERSION
 ENV LD_LIBRARY_PATH=/opt/libseccomp/lib
 ENV PKG_CONFIG_PATH=/opt/libseccomp/lib/pkgconfig

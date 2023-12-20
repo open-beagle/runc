@@ -7,23 +7,30 @@ git remote add upstream git@github.com:opencontainers/runc.git
 
 git fetch upstream
 
-git merge v1.1.9
+git merge v1.1.10
 ```
 
 ## prepare
 
 ```bash
+## debug
+docker run -it --rm \
+-v $PWD/:/go/src/github.com/opencontainers/runc \
+-w /go/src/github.com/opencontainers/runc \
+registry.cn-qingdao.aliyuncs.com/wod/golang:1.21 \
+bash
+
 ## 首先打个补丁，再编译runc-build
 git apply .beagle/v1.1-add-mips64el-support.patch
 git apply -R .beagle/v1.1-add-mips64el-support.patch
 
 docker build \
   --no-cache \
-  --build-arg GO_VERSION=1.20-loongnix \
-  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.9-build \
+  --build-arg GO_VERSION=1.21 \
+  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
   --file ./.beagle/runc-build.dockerfile .
 
-docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.9-build
+docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
 ```
 
 ## build
@@ -33,7 +40,7 @@ docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.9-build
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.9-build \
+registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
 bash .beagle/build.sh
 ```
 
