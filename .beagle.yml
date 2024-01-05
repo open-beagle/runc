@@ -35,7 +35,13 @@ steps:
       proxy:
         from_secret: SOCKS5_PROXY
 
-  - name: golang
+  - name: libseccomp
+    image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
+    commands:
+      - mkdir -p release
+      - cp -r /opt/libseccomp ./release/libseccomp
+
+  - name: golang-cross
     image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
     commands:
       - bash .beagle/build.sh
@@ -116,24 +122,29 @@ steps:
       registry_password:
         from_secret: REGISTRY_PASSWORD_ALIYUN
 
-  # - name: docker-loong64
-  #   image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
-  #   volumes:
-  #     - name: docker
-  #       path: /var/run/docker.sock
-  #   settings:
-  #     dockerfile: .beagle/dockerfile
-  #     base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
-  #     cwd: release
-  #     repo: wod/runc
-  #     version: v1.1.10
-  #     channel: loong64
-  #     args: 'TARGETOS=linux,TARGETARCH=loong64'
-  #     registry: registry.cn-qingdao.aliyuncs.com
-  #     registry_user:
-  #       from_secret: REGISTRY_USER_ALIYUN
-  #     registry_password:
-  #       from_secret: REGISTRY_PASSWORD_ALIYUN
+  - name: golang-loong64
+    image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix
+    commands:
+      - bash .beagle/build-loong64.sh
+
+  - name: docker-loong64
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    settings:
+      dockerfile: .beagle/dockerfile
+      base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
+      cwd: release
+      repo: wod/runc
+      version: v1.1.10
+      channel: loong64
+      args: 'TARGETOS=linux,TARGETARCH=loong64'
+      registry: registry.cn-qingdao.aliyuncs.com
+      registry_user:
+        from_secret: REGISTRY_USER_ALIYUN
+      registry_password:
+        from_secret: REGISTRY_PASSWORD_ALIYUN
 
 ---
 kind: secret

@@ -24,13 +24,38 @@ bash
 git apply .beagle/v1.1-add-mips64el-support.patch
 git apply -R .beagle/v1.1-add-mips64el-support.patch
 
+## cross
 docker build \
   --no-cache \
+  --file ./.beagle/runc-build.dockerfile \
   --build-arg GO_VERSION=1.21 \
   --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
-  --file ./.beagle/runc-build.dockerfile .
+  .
 
 docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
+
+## loong64
+docker build \
+  --no-cache \
+  --file .beagle/runc-build-loong64.dockerfile \
+  --build-arg GO_VERSION=1.20-loongnix \
+  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix \
+  .
+
+docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix
+```
+
+## libseccomp
+
+```bash
+docker run -it --rm \
+-v $PWD/:/go/src/github.com/opencontainers/runc \
+-w /go/src/github.com/opencontainers/runc \
+registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5 \
+sh -c '
+mkdir -p release && \
+cp -r /opt/libseccomp ./release/libseccomp
+'
 ```
 
 ## build
@@ -42,6 +67,13 @@ docker run -it --rm \
 -w /go/src/github.com/opencontainers/runc \
 registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
 bash .beagle/build.sh
+
+# loong64
+docker run -it --rm \
+-v $PWD/:/go/src/github.com/opencontainers/runc \
+-w /go/src/github.com/opencontainers/runc \
+registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix \
+bash .beagle/build-loong64.sh
 ```
 
 ## cache
