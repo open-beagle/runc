@@ -36,7 +36,7 @@ steps:
         from_secret: SOCKS5_PROXY
 
   - name: libseccomp
-    image: registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
+    image: registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5
     commands:
       - mkdir -p release
       - cp -r /opt/libseccomp ./release/libseccomp
