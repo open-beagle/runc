@@ -29,10 +29,10 @@ docker build \
   --no-cache \
   --file ./.beagle/runc-build.dockerfile \
   --build-arg GO_VERSION=1.21 \
-  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
+  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
   .
 
-docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
+docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
 
 ## loong64
 docker build \
@@ -48,10 +48,11 @@ docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix
 ## libseccomp
 
 ```bash
+rm -rf release && \
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5 \
+registry-vpc.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5 \
 sh -c '
 mkdir -p release && \
 cp -r /opt/libseccomp ./release/libseccomp
@@ -65,7 +66,7 @@ cp -r /opt/libseccomp ./release/libseccomp
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
+registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
 bash .beagle/build.sh
 
 # loong64
