@@ -122,6 +122,12 @@ steps:
       registry_password:
         from_secret: REGISTRY_PASSWORD_ALIYUN
 
+  - name: libseccomp-loong64
+    image: registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5-loong64
+    commands:
+      - mkdir -p release
+      - cp -r /opt/libseccomp ./release/libseccomp
+
   - name: golang-loong64
     image: registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix
     commands:
