@@ -15,7 +15,7 @@ export GOARCH=amd64
 export LD_LIBRARY_PATH=$PWD/release/libseccomp/amd64/lib
 export PKG_CONFIG_PATH=$PWD/release/libseccomp/amd64/lib/pkgconfig
 
-sed -i "s/.tmp/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
+sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
 
 make static
 strip runc
@@ -27,7 +27,7 @@ export STRIP=aarch64-linux-gnu-strip
 export LD_LIBRARY_PATH=$PWD/release/libseccomp/arm64/lib
 export PKG_CONFIG_PATH=$PWD/release/libseccomp/arm64/lib/pkgconfig
 
-sed -i "s/.tmp/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
+sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
 
 make static
 $STRIP runc
@@ -39,7 +39,7 @@ export STRIP=powerpc64le-linux-gnu-strip
 export LD_LIBRARY_PATH=$PWD/release/libseccomp/ppc64le/lib
 export PKG_CONFIG_PATH=$PWD/release/libseccomp/ppc64le/lib/pkgconfig
 
-sed -i "s/.tmp/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
+sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
 
 make static
 $STRIP runc
@@ -51,7 +51,7 @@ export STRIP=mips64el-linux-gnuabi64-strip
 export LD_LIBRARY_PATH=$PWD/release/libseccomp/mips64le/lib
 export PKG_CONFIG_PATH=$PWD/release/libseccomp/mips64le/lib/pkgconfig
 
-sed -i "s/.tmp/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
+sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
 
 make static
 $STRIP runc

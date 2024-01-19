@@ -18,7 +18,7 @@ export STRIP=loongarch64-linux-gnu-strip
 export LD_LIBRARY_PATH=$PWD/release/libseccomp/loong64/lib
 export PKG_CONFIG_PATH=$PWD/release/libseccomp/loong64/lib/pkgconfig
 
-sed -i "s/.tmp/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
+sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
 
 make static
 $STRIP runc

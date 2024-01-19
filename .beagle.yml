@@ -125,7 +125,7 @@ steps:
   - name: libseccomp-loong64
     image: registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5-loong64
     commands:
-      - mkdir -p release
+      - rm -rf ./release/libseccomp
       - cp -r /opt/libseccomp ./release/libseccomp
 
   - name: golang-loong64

@@ -57,6 +57,16 @@ sh -c '
 mkdir -p release && \
 cp -r /opt/libseccomp ./release/libseccomp
 '
+
+docker run -it --rm \
+-v $PWD/:/go/src/github.com/opencontainers/runc \
+-w /go/src/github.com/opencontainers/runc \
+registry-vpc.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5-loong64 \
+sh -c '
+mkdir -p release && \
+rm -rf ./release/libseccomp && \
+cp -r /opt/libseccomp ./release/libseccomp
+'
 ```
 
 ## build
