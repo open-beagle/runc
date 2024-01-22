@@ -4,7 +4,7 @@ ARG LIBSECCOMP_VERSION=2.5.5
 
 FROM registry.cn-qingdao.aliyuncs.com/wod/golang:${GO_VERSION}
 ARG DEBIAN_FRONTEND=noninteractive
-ARG CRIU_REPO=https://download.opensuse.org/repositories/devel:/tools:/criu/Debian_11
+ARG CRIU_REPO=https://mirrors.163.com/openSUSE/repositories/devel:/tools:/criu/Debian_11
 
 RUN KEYFILE=/usr/share/keyrings/criu-repo-keyring.gpg; \
     wget -nv $CRIU_REPO/Release.key -O- | gpg --dearmor > "$KEYFILE" \
