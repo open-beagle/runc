@@ -6,6 +6,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased 1.1.z]
 
+## [1.1.12] - 2024-01-31
+
+> Now you're thinking with Portals™!
+
+### Security
+
+* Fix [CVE-2024-21626][cve-2024-21626], a container breakout attack that took
+  advantage of a file descriptor that was leaked internally within runc (but
+  never leaked to the container process). In addition to fixing the leak,
+  several strict hardening measures were added to ensure that future internal
+  leaks could not be used to break out in this manner again. Based on our
+  research, while no other container runtime had a similar leak, none had any
+  of the hardening steps we've introduced (and some runtimes would not check
+  for any file descriptors that a calling process may have leaked to them,
+  allowing for container breakouts due to basic user error).
+
+[cve-2024-21626]: https://github.com/opencontainers/runc/security/advisories/GHSA-xr7r-f8xq-vfvv
+
+## [1.1.11] - 2024-01-01
+
+> Happy New Year!
+
+### Fixed
+
+* Fix several issues with userns path handling. (#4122, #4124, #4134, #4144)
+
+### Changed
+
+ * Support memory.peak and memory.swap.peak in cgroups v2.
+   Add `swapOnlyUsage` in `MemoryStats`. This field reports swap-only usage.
+   For cgroupv1, `Usage` and `Failcnt` are set by subtracting memory usage
+   from memory+swap usage. For cgroupv2, `Usage`, `Limit`, and `MaxUsage`
+   are set. (#4000, #4010, #4131)
+ * build(deps): bump github.com/cyphar/filepath-securejoin. (#4140)
+
 ## [1.1.10] - 2023-10-31
 
 > Śruba, przykręcona we śnie, nie zmieni sytuacji, jaka panuje na jawie.
@@ -476,7 +511,9 @@ implementation (libcontainer) is *not* covered by this policy.
 [1.0.1]: https://github.com/opencontainers/runc/compare/v1.0.0...v1.0.1
 
 <!-- 1.1.z patch releases -->
-[Unreleased 1.1.z]: https://github.com/opencontainers/runc/compare/v1.1.10...release-1.1
+[Unreleased 1.1.z]: https://github.com/opencontainers/runc/compare/v1.1.12...release-1.1
+[1.1.12]: https://github.com/opencontainers/runc/compare/v1.1.11...v1.1.12
+[1.1.11]: https://github.com/opencontainers/runc/compare/v1.1.10...v1.1.11
 [1.1.10]: https://github.com/opencontainers/runc/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/opencontainers/runc/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/opencontainers/runc/compare/v1.1.7...v1.1.8
