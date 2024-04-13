@@ -7,7 +7,7 @@ git remote add upstream git@github.com:opencontainers/runc.git
 
 git fetch upstream
 
-git merge v1.1.10
+git merge v1.1.12
 ```
 
 ## libseccomp
@@ -100,18 +100,18 @@ docker build \
   --no-cache \
   --file ./.beagle/runc-build.dockerfile \
   --build-arg GO_VERSION=1.21 \
-  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build \
+  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.12-build \
   .
 
-docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build
+docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.12-build
 
 ## loong64
 docker build \
   --no-cache \
   --file .beagle/runc-build-loong64.dockerfile \
   --build-arg GO_VERSION=1.21-loongnix \
-  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix \
+  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.12-build-loongnix \
   .
 
-docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.10-build-loongnix
+docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.12-build-loongnix
 ```
