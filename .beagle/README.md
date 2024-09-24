@@ -7,7 +7,7 @@ git remote add upstream git@github.com:opencontainers/runc.git
 
 git fetch upstream
 
-git merge v1.1.13
+git merge v1.1.14
 ```
 
 ## libseccomp
@@ -17,7 +17,7 @@ rm -rf release && \
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry-vpc.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5 \
+registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5 \
 sh -c '
 mkdir -p release && \
 cp -r /opt/libseccomp ./release/libseccomp
@@ -26,7 +26,7 @@ cp -r /opt/libseccomp ./release/libseccomp
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry-vpc.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.3.3-loong64 \
+registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.3.3-loong64 \
 sh -c '
 mkdir -p release && \
 rm -rf ./release/libseccomp && \
@@ -41,14 +41,14 @@ cp -r /opt/libseccomp ./release/libseccomp
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry-vpc.cn-qingdao.aliyuncs.com/wod/golang:1.21 \
+registry.cn-qingdao.aliyuncs.com/wod/golang:1.22 \
 bash .beagle/build.sh
 
 # loong64
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry-vpc.cn-qingdao.aliyuncs.com/wod/golang:1.21-loongnix \
+registry.cn-qingdao.aliyuncs.com/wod/golang:1.22-loongnix \
 bash .beagle/build-loong64.sh
 ```
 
@@ -88,7 +88,7 @@ docker run --rm \
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/golang:1.21 \
+registry.cn-qingdao.aliyuncs.com/wod/golang:1.22 \
 bash
 
 ## 首先打个补丁，再编译runc-build
@@ -99,19 +99,19 @@ git apply -R .beagle/v1.1-add-mips64el-support.patch
 docker build \
   --no-cache \
   --file ./.beagle/runc-build.dockerfile \
-  --build-arg GO_VERSION=1.21 \
-  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.13-build \
+  --build-arg GO_VERSION=1.22 \
+  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build \
   .
 
-docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.13-build
+docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build
 
 ## loong64
 docker build \
   --no-cache \
   --file .beagle/runc-build-loong64.dockerfile \
-  --build-arg GO_VERSION=1.21-loongnix \
-  --tag registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.13-build-loongnix \
+  --build-arg GO_VERSION=1.22-loongnix \
+  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build-loongnix \
   .
 
-docker push registry-vpc.cn-qingdao.aliyuncs.com/wod/runc:1.1.13-build-loongnix
+docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build-loongnix
 ```

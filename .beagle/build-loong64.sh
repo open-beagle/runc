@@ -2,15 +2,21 @@
 
 set -ex
 
+git config --global --add safe.directory $PWD
+
 mkdir -p release
 
 # version patch 版本号补丁
-git apply .beagle/v1-versoin.patch
+if $(git diff --quiet VERSION); then
+  git apply .beagle/v1-versoin.patch
+fi
 
 # # loong64 patch 翟小娟@龙芯
-git apply .beagle/v1.1.9-add-seccomp-support-for-loong64.patch
+if $(git diff --quiet libcontainer/seccomp/config.go); then
+  git apply .beagle/v1.1.9-add-seccomp-support-for-loong64.patch
+fi
 
-export COMMIT=$(git rev-parse --short HEAD 2> /dev/null || true)
+export COMMIT=$(git rev-parse --short HEAD 2>/dev/null || true)
 
 export GOARCH=loong64
 export CC=loongarch64-linux-gnu-gcc
