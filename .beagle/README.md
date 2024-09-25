@@ -41,7 +41,7 @@ cp -r /opt/libseccomp ./release/libseccomp
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/golang:1.22 \
+registry.cn-qingdao.aliyuncs.com/wod/golang:1.23 \
 bash .beagle/build.sh
 
 # loong64
@@ -79,39 +79,4 @@ docker run --rm \
   -v $(pwd):$(pwd) \
   -w $(pwd) \
   registry.cn-qingdao.aliyuncs.com/wod/devops-s3-cache:1.0
-```
-
-## runc:build 已过期
-
-```bash
-## debug
-docker run -it --rm \
--v $PWD/:/go/src/github.com/opencontainers/runc \
--w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/golang:1.22 \
-bash
-
-## 首先打个补丁，再编译runc-build
-git apply .beagle/v1.1-add-mips64el-support.patch
-git apply -R .beagle/v1.1-add-mips64el-support.patch
-
-## cross
-docker build \
-  --no-cache \
-  --file ./.beagle/runc-build.dockerfile \
-  --build-arg GO_VERSION=1.22 \
-  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build \
-  .
-
-docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build
-
-## loong64
-docker build \
-  --no-cache \
-  --file .beagle/runc-build-loong64.dockerfile \
-  --build-arg GO_VERSION=1.22-loongnix \
-  --tag registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build-loongnix \
-  .
-
-docker push registry.cn-qingdao.aliyuncs.com/wod/runc:1.1.14-build-loongnix
 ```

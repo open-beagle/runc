@@ -37,29 +37,5 @@ make static
 $STRIP runc
 mv runc release/runc-linux-$GOARCH
 
-# export GOARCH=ppc64le
-# export CC=powerpc64le-linux-gnu-gcc
-# export STRIP=powerpc64le-linux-gnu-strip
-# export LD_LIBRARY_PATH=$PWD/release/libseccomp/ppc64le/lib
-# export PKG_CONFIG_PATH=$PWD/release/libseccomp/ppc64le/lib/pkgconfig
-
-# sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
-
-# make static
-# $STRIP runc
-# mv runc release/runc-linux-$GOARCH
-
-# export GOARCH=mips64le
-# export CC=mips64el-linux-gnuabi64-gcc
-# export STRIP=mips64el-linux-gnuabi64-strip
-# export LD_LIBRARY_PATH=$PWD/release/libseccomp/mips64le/lib
-# export PKG_CONFIG_PATH=$PWD/release/libseccomp/mips64le/lib/pkgconfig
-
-# sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
-
-# make static
-# $STRIP runc
-# mv runc release/runc-linux-$GOARCH
-
 # version patch 版本号补丁
 git apply -R .beagle/v1-versoin.patch

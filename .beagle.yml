@@ -42,7 +42,7 @@ steps:
       - cp -r /opt/libseccomp ./release/libseccomp
 
   - name: golang-cross
-    image: registry.cn-qingdao.aliyuncs.com/wod/golang:1.22
+    image: registry.cn-qingdao.aliyuncs.com/wod/golang:1.23
     commands:
       - bash .beagle/build.sh
 
