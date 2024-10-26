@@ -7,7 +7,7 @@ git remote add upstream git@github.com:opencontainers/runc.git
 
 git fetch upstream
 
-git merge v1.1.14
+git merge v1.1.15
 ```
 
 ## libseccomp
@@ -38,11 +38,12 @@ cp -r /opt/libseccomp ./release/libseccomp
 
 ```bash
 # cross
+docker pull registry.cn-qingdao.aliyuncs.com/wod/golang:1.23 && \
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/opencontainers/runc \
 -w /go/src/github.com/opencontainers/runc \
 registry.cn-qingdao.aliyuncs.com/wod/golang:1.23 \
-bash .beagle/build.sh
+bash .beagle/build-cross.sh
 
 # loong64
 docker run -it --rm \

@@ -35,12 +35,6 @@ steps:
       proxy:
         from_secret: SOCKS5_PROXY
 
-  - name: libseccomp
-    image: registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5
-    commands:
-      - mkdir -p release
-      - cp -r /opt/libseccomp ./release/libseccomp
-
   - name: golang-cross
     image: registry.cn-qingdao.aliyuncs.com/wod/golang:1.23
     commands:
@@ -56,7 +50,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
       cwd: release
       repo: wod/runc
-      version: v1.1.14
+      version: v1.1.15
       channel: amd64
       args: 'TARGETOS=linux,TARGETARCH=amd64'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -75,7 +69,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-arm64
       cwd: release
       repo: wod/runc
-      version: v1.1.14
+      version: v1.1.15
       channel: arm64
       args: 'TARGETOS=linux,TARGETARCH=arm64'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -105,7 +99,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
       cwd: release
       repo: wod/runc
-      version: v1.1.14
+      version: v1.1.15
       channel: loong64
       args: 'TARGETOS=linux,TARGETARCH=loong64'
       registry: registry.cn-qingdao.aliyuncs.com
