@@ -26,6 +26,7 @@ export PKG_CONFIG_PATH=$PWD/release/libseccomp/loong64/lib/pkgconfig
 
 sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccomp/g" $PKG_CONFIG_PATH/libseccomp.pc
 
+mkdir -p release/linux/$GOARCH
 make static
 $STRIP runc
 mv runc release/linux/$GOARCH/runc
