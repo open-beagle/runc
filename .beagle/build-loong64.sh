@@ -28,7 +28,7 @@ sed -i "s/open-beagle\/libseccomp\/.tmp/opencontainers\/runc\/release\/libseccom
 
 make static
 $STRIP runc
-mv runc release/runc-linux-$GOARCH
+mv runc release/linux/$GOARCH/runc
 
 # version patch 版本号补丁
 git apply -R .beagle/v1-versoin.patch
