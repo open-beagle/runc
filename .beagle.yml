@@ -38,7 +38,7 @@ steps:
   - name: golang-cross
     image: registry.cn-qingdao.aliyuncs.com/wod/golang:1.23
     commands:
-      - bash .beagle/build.sh
+      - bash .beagle/build-cross.sh
 
   - name: docker-amd64
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
