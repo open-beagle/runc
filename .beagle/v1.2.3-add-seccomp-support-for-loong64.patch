@@ -1,0 +1,155 @@
+From 17ee28df1ea2398450b8a6bc0de0caae9fba4b40 Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Thu, 19 Dec 2024 13:50:38 +0800
+Subject: [PATCH] add seccomp support for loong64
+
+---
+ libcontainer/seccomp/config.go                        |  1 +
+ libcontainer/seccomp/patchbpf/enosys_linux.go         |  3 +++
+ libcontainer/seccomp/patchbpf/enosys_linux_test.go    |  1 +
+ .../opencontainers/runtime-spec/specs-go/config.go    |  1 +
+ .../github.com/seccomp/libseccomp-golang/seccomp.go   |  6 ++++++
+ .../seccomp/libseccomp-golang/seccomp_internal.go     | 11 ++++++++++-
+ 6 files changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/libcontainer/seccomp/config.go b/libcontainer/seccomp/config.go
+index 3ca03ed8..5c92169f 100644
+--- a/libcontainer/seccomp/config.go
++++ b/libcontainer/seccomp/config.go
+@@ -74,6 +74,7 @@ var archs = map[string]string{
+ 	"SCMP_ARCH_RISCV64":     "riscv64",
+ 	"SCMP_ARCH_S390":        "s390",
+ 	"SCMP_ARCH_S390X":       "s390x",
++	"SCMP_ARCH_LOONGARCH64": "loong64",
+ }
+ 
+ // KnownArchs returns the list of the known archs.
+diff --git a/libcontainer/seccomp/patchbpf/enosys_linux.go b/libcontainer/seccomp/patchbpf/enosys_linux.go
+index 86de3137..d90ecdcf 100644
+--- a/libcontainer/seccomp/patchbpf/enosys_linux.go
++++ b/libcontainer/seccomp/patchbpf/enosys_linux.go
+@@ -78,6 +78,7 @@ const uint32_t C_AUDIT_ARCH_PPC64LE      = AUDIT_ARCH_PPC64LE;
+ const uint32_t C_AUDIT_ARCH_S390         = AUDIT_ARCH_S390;
+ const uint32_t C_AUDIT_ARCH_S390X        = AUDIT_ARCH_S390X;
+ const uint32_t C_AUDIT_ARCH_RISCV64      = AUDIT_ARCH_RISCV64;
++const uint32_t C_AUDIT_ARCH_LOONGARCH64  = AUDIT_ARCH_LOONGARCH64;
+ */
+ import "C"
+ 
+@@ -217,6 +218,8 @@ func scmpArchToAuditArch(arch libseccomp.ScmpArch) (linuxAuditArch, error) {
+ 		return linuxAuditArch(C.C_AUDIT_ARCH_S390X), nil
+ 	case libseccomp.ArchRISCV64:
+ 		return linuxAuditArch(C.C_AUDIT_ARCH_RISCV64), nil
++	case libseccomp.ArchLOONGARCH64:
++		return linuxAuditArch(C.C_AUDIT_ARCH_LOONGARCH64), nil
+ 	default:
+ 		return invalidArch, fmt.Errorf("unknown architecture: %v", arch)
+ 	}
+diff --git a/libcontainer/seccomp/patchbpf/enosys_linux_test.go b/libcontainer/seccomp/patchbpf/enosys_linux_test.go
+index cb845892..0e26fded 100644
+--- a/libcontainer/seccomp/patchbpf/enosys_linux_test.go
++++ b/libcontainer/seccomp/patchbpf/enosys_linux_test.go
+@@ -104,6 +104,7 @@ var testArches = []string{
+ 	"ppc64le",
+ 	"s390",
+ 	"s390x",
++	"loong64",
+ 	// Dummy value to indicate a configuration with no architecture specified.
+ 	"native",
+ }
+diff --git a/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go b/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go
+index d1236ba7..6b60e460 100644
+--- a/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go
++++ b/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go
+@@ -751,6 +751,7 @@ const (
+ 	ArchPARISC      Arch = "SCMP_ARCH_PARISC"
+ 	ArchPARISC64    Arch = "SCMP_ARCH_PARISC64"
+ 	ArchRISCV64     Arch = "SCMP_ARCH_RISCV64"
++	ArchLOONGARCH64 Arch = "SCMP_ARCH_LOONGARCH64"
+ )
+ 
+ // LinuxSeccompAction taken upon Seccomp rule match
+diff --git a/vendor/github.com/seccomp/libseccomp-golang/seccomp.go b/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
+index c2340675..50222f53 100644
+--- a/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
++++ b/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
+@@ -175,6 +175,8 @@ const (
+ 	ArchPARISC64
+ 	// ArchRISCV64 represents RISCV64
+ 	ArchRISCV64
++	// ArchLOONGARCH64 represents 64-bit LoongArch System syscalls
++	ArchLOONGARCH64
+ )
+ 
+ const (
+@@ -306,6 +308,8 @@ func GetArchFromString(arch string) (ScmpArch, error) {
+ 		return ArchPARISC64, nil
+ 	case "riscv64":
+ 		return ArchRISCV64, nil
++	case "loongarch64", "loong64":
++		return ArchLOONGARCH64, nil
+ 	default:
+ 		return ArchInvalid, fmt.Errorf("cannot convert unrecognized string %q", arch)
+ 	}
+@@ -352,6 +356,8 @@ func (a ScmpArch) String() string {
+ 		return "parisc64"
+ 	case ArchRISCV64:
+ 		return "riscv64"
++	case ArchLOONGARCH64:
++		return "loong64"
+ 	case ArchNative:
+ 		return "native"
+ 	case ArchInvalid:
+diff --git a/vendor/github.com/seccomp/libseccomp-golang/seccomp_internal.go b/vendor/github.com/seccomp/libseccomp-golang/seccomp_internal.go
+index 0a7fd34f..bbdeab3d 100644
+--- a/vendor/github.com/seccomp/libseccomp-golang/seccomp_internal.go
++++ b/vendor/github.com/seccomp/libseccomp-golang/seccomp_internal.go
+@@ -68,6 +68,10 @@ const uint32_t C_ARCH_BAD = ARCH_BAD;
+ #define SCMP_ARCH_RISCV64 ARCH_BAD
+ #endif
+ 
++#ifndef SCMP_ARCH_LOONGARCH64
++#define SCMP_ARCH_LOONGARCH64 ARCH_BAD
++#endif
++
+ const uint32_t C_ARCH_NATIVE       = SCMP_ARCH_NATIVE;
+ const uint32_t C_ARCH_X86          = SCMP_ARCH_X86;
+ const uint32_t C_ARCH_X86_64       = SCMP_ARCH_X86_64;
+@@ -88,6 +92,7 @@ const uint32_t C_ARCH_S390X        = SCMP_ARCH_S390X;
+ const uint32_t C_ARCH_PARISC       = SCMP_ARCH_PARISC;
+ const uint32_t C_ARCH_PARISC64     = SCMP_ARCH_PARISC64;
+ const uint32_t C_ARCH_RISCV64      = SCMP_ARCH_RISCV64;
++const uint32_t C_ARCH_LOONGARCH64 = SCMP_ARCH_LOONGARCH64;
+ 
+ #ifndef SCMP_ACT_LOG
+ #define SCMP_ACT_LOG 0x7ffc0000U
+@@ -291,7 +296,7 @@ const (
+ 	scmpError C.int = -1
+ 	// Comparison boundaries to check for architecture validity
+ 	archStart ScmpArch = ArchNative
+-	archEnd   ScmpArch = ArchRISCV64
++	archEnd   ScmpArch = ArchLOONGARCH64
+ 	// Comparison boundaries to check for action validity
+ 	actionStart ScmpAction = ActKillThread
+ 	actionEnd   ScmpAction = ActKillProcess
+@@ -552,6 +557,8 @@ func archFromNative(a C.uint32_t) (ScmpArch, error) {
+ 		return ArchPARISC64, nil
+ 	case C.C_ARCH_RISCV64:
+ 		return ArchRISCV64, nil
++	case C.C_ARCH_LOONGARCH64:
++		return ArchLOONGARCH64, nil
+ 	default:
+ 		return 0x0, fmt.Errorf("unrecognized architecture %#x", uint32(a))
+ 	}
+@@ -598,6 +605,8 @@ func (a ScmpArch) toNative() C.uint32_t {
+ 		return C.C_ARCH_PARISC64
+ 	case ArchRISCV64:
+ 		return C.C_ARCH_RISCV64
++	case ArchLOONGARCH64:
++		return C.C_ARCH_LOONGARCH64
+ 	case ArchNative:
+ 		return C.C_ARCH_NATIVE
+ 	default:
+-- 
+2.39.5
+

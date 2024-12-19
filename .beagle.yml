@@ -1,0 +1,144 @@
+kind: pipeline
+name: docker
+
+trigger:
+  branch:
+    - release-v1.1
+
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+
+workspace:
+  path: /go/src/github.com/opencontainers/runc
+
+clone:
+  disable: true
+
+steps:
+  - name: s3-cache
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/devops-s3-cache:1.0
+    settings:
+      restore: true
+      mount:
+        - ./.git
+      endpoint: https://cache.ali.wodcloud.com
+      access_key:
+        from_secret: S3_ACCESS_KEY_ALIYUN
+      secret_key:
+        from_secret: S3_SECRET_KEY_ALIYUN
+
+  - name: fetch
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/devops-git:1.0
+    settings:
+      proxy:
+        from_secret: SOCKS5_PROXY
+
+  - name: golang-cross
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/golang:1.23-bookworm
+    commands:
+      - bash .beagle/build-cross.sh
+
+  - name: docker-amd64
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    settings:
+      dockerfile: .beagle/dockerfile
+      base: registry-vpc.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
+      cwd: release
+      repo: wod/runc
+      version: v1.2.3
+      channel: amd64
+      args: 'TARGETOS=linux,TARGETARCH=amd64'
+      registry: registry-vpc.cn-qingdao.aliyuncs.com
+      registry_user:
+        from_secret: REGISTRY_USER_ALIYUN
+      registry_password:
+        from_secret: REGISTRY_PASSWORD_ALIYUN
+
+  - name: docker-arm64
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    settings:
+      dockerfile: .beagle/dockerfile
+      base: registry-vpc.cn-qingdao.aliyuncs.com/wod/alpine:3-arm64
+      cwd: release
+      repo: wod/runc
+      version: v1.2.3
+      channel: arm64
+      args: 'TARGETOS=linux,TARGETARCH=arm64'
+      registry: registry-vpc.cn-qingdao.aliyuncs.com
+      registry_user:
+        from_secret: REGISTRY_USER_ALIYUN
+      registry_password:
+        from_secret: REGISTRY_PASSWORD_ALIYUN
+
+  - name: libseccomp-loong64
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.3.3-loong64
+    commands:
+      - rm -rf ./release/libseccomp
+      - cp -r /opt/libseccomp ./release/libseccomp
+
+  - name: golang-loong64
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/golang:1.22-loongnix
+    commands:
+      - bash .beagle/build-loong64.sh
+
+  - name: docker-loong64
+    image: registry-vpc.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    settings:
+      dockerfile: .beagle/dockerfile
+      base: registry-vpc.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
+      cwd: release
+      repo: wod/runc
+      version: v1.2.3
+      channel: loong64
+      args: 'TARGETOS=linux,TARGETARCH=loong64'
+      registry: registry-vpc.cn-qingdao.aliyuncs.com
+      registry_user:
+        from_secret: REGISTRY_USER_ALIYUN
+      registry_password:
+        from_secret: REGISTRY_PASSWORD_ALIYUN
+
+---
+kind: secret
+name: SOCKS5_PROXY
+get:
+  name: SOCKS5_PROXY
+  path: devops-secrets
+
+---
+kind: secret
+name: REGISTRY_USER_ALIYUN
+get:
+  name: REGISTRY_USER_ALIYUN
+  path: devops-secrets
+
+---
+kind: secret
+name: REGISTRY_PASSWORD_ALIYUN
+get:
+  name: REGISTRY_PASSWORD_ALIYUN
+  path: devops-secrets
+
+---
+kind: secret
+name: S3_ACCESS_KEY_ALIYUN
+get:
+  name: S3_ACCESS_KEY_ALIYUN
+  path: devops-secrets
+
+---
+kind: secret
+name: S3_SECRET_KEY_ALIYUN
+get:
+  name: S3_SECRET_KEY_ALIYUN
+  path: devops-secrets
