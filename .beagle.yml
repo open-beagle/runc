@@ -50,7 +50,7 @@ steps:
       base: registry-vpc.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
       cwd: release
       repo: wod/runc
-      version: v1.2.3
+      version: v1.2.4
       channel: amd64
       args: 'TARGETOS=linux,TARGETARCH=amd64'
       registry: registry-vpc.cn-qingdao.aliyuncs.com
@@ -69,7 +69,7 @@ steps:
       base: registry-vpc.cn-qingdao.aliyuncs.com/wod/alpine:3-arm64
       cwd: release
       repo: wod/runc
-      version: v1.2.3
+      version: v1.2.4
       channel: arm64
       args: 'TARGETOS=linux,TARGETARCH=arm64'
       registry: registry-vpc.cn-qingdao.aliyuncs.com
@@ -99,7 +99,7 @@ steps:
       base: registry-vpc.cn-qingdao.aliyuncs.com/wod/alpine:3-amd64
       cwd: release
       repo: wod/runc
-      version: v1.2.3
+      version: v1.2.4
       channel: loong64
       args: 'TARGETOS=linux,TARGETARCH=loong64'
       registry: registry-vpc.cn-qingdao.aliyuncs.com
