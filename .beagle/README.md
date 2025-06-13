@@ -30,11 +30,11 @@ git merge v1.2.6
 ```bash
 # cross
 docker pull \
-  registry.cn-qingdao.aliyuncs.com/wod/golang:1.23 && \
+  registry.cn-qingdao.aliyuncs.com/wod/golang:1.23-bookworm && \
 docker run -it --rm \
   -v $PWD/:/go/src/github.com/opencontainers/runc \
   -w /go/src/github.com/opencontainers/runc \
-  registry.cn-qingdao.aliyuncs.com/wod/golang:1.23 \
+  registry.cn-qingdao.aliyuncs.com/wod/golang:1.23-bookworm \
   bash .beagle/build-cross.sh
 ```
 

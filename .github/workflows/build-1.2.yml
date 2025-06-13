@@ -32,7 +32,7 @@ jobs:
           docker run --rm -v ${{ github.workspace }}:/go/src/github.com/opencontainers/runc \
             -w /go/src/github.com/opencontainers/runc \
             -e BUILD_VERSION=${{ env.BUILD_VERSION }} \
-            ${{ env.REGISTRY_ALIYUN }}/wod/golang:1.23 \
+            ${{ env.REGISTRY_ALIYUN }}/wod/golang:1.23-bookworm \
             bash -c "bash ./.beagle/build-cross.sh"
 
       - name: Set up Docker Buildx
