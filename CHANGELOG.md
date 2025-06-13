@@ -6,6 +6,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased 1.2.z]
 
+## [1.2.6] - 2025-03-17
+
+> Hasta la victoria, siempre.
+
+## Fixed
+ * Fix a stall issue that would happen if setting `O_CLOEXEC` with
+   `CloseExecFrom` failed (#4647).
+ * `runc` now properly handles joining time namespaces (such as with `runc
+   exec`). Previously we would attempt to set the time offsets when joining,
+   which would fail. (#4635, #4649)
+ * Handle `EINTR` retries correctly for socket-related direct
+   `golang.org/x/sys/unix` system calls. (#4650)
+ * We no longer use `F_SEAL_FUTURE_WRITE` when sealing the runc binary, as it
+   turns out this had some unfortunate bugs in older kernel versions and was
+   never necessary in the first place. (#4651, #4640)
+
+### Removed
+ * Remove `Fexecve` helper from `libcontainer/system`. Runc 1.2.1 removed
+   runc-dmz, but we forgot to remove this helper added only for that. (#4646)
+
+##  Changed
+ * Use Go 1.23 for official builds, run CI with Go 1.24 and drop Ubuntu 20.04
+   from CI. We need to drop Ubuntu 20.04 from CI because Github Actions
+   announced it's already deprecated and it will be discontinued soon. (#4648)
+
+## [1.2.5] - 2025-02-13
+
+> Мороз и солнце; день чудесный!
+
+### Fixed
+* There was a regression in systemd v230 which made the way we define device
+  rule restrictions require a systemctl daemon-reload for our transient
+  units. This caused issues for workloads using NVIDIA GPUs. Workaround the
+  upstream regression by re-arranging how the unit properties are defined.
+  (#4568, #4612, #4615)
+ * Dependency github.com/cyphar/filepath-securejoin is updated to v0.4.1,
+   allowing projects that vendor runc to bump it as well. (#4608)
+ * CI: fixed criu-dev compilation. (#4611)
+
+### Changed
+ * Dependency golang.org/x/net is updated to 0.33.0. (#4632)
+
 ## [1.2.4] - 2025-01-07
 
 > Христос се роди!
@@ -972,7 +1014,9 @@ implementation (libcontainer) is *not* covered by this policy.
 [1.1.0-rc.1]: https://github.com/opencontainers/runc/compare/v1.0.0...v1.1.0-rc.1
 
 <!-- 1.2.z patch releases -->
-[Unreleased 1.2.z]: https://github.com/opencontainers/runc/compare/v1.2.4...release-1.2
+[Unreleased 1.2.z]: https://github.com/opencontainers/runc/compare/v1.2.6...release-1.2
+[1.2.6]: https://github.com/opencontainers/runc/compare/v1.2.5...v1.2.6
+[1.2.5]: https://github.com/opencontainers/runc/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/opencontainers/runc/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/opencontainers/runc/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/opencontainers/runc/compare/v1.2.1...v1.2.2
