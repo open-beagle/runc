@@ -7,51 +7,35 @@ git remote add upstream git@github.com:opencontainers/runc.git
 
 git fetch upstream
 
-git merge v1.2.4
+git merge v1.2.6
 ```
 
 ## libseccomp
 
 ```bash
-rm -rf release && \
-docker run -it --rm \
--v $PWD/:/go/src/github.com/opencontainers/runc \
--w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5 \
-sh -c '
-mkdir -p release && \
-cp -r /opt/libseccomp ./release/libseccomp
-'
-
-docker run -it --rm \
--v $PWD/:/go/src/github.com/opencontainers/runc \
--w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.3.3-loong64 \
-sh -c '
-mkdir -p release && \
-rm -rf ./release/libseccomp && \
-cp -r /opt/libseccomp ./release/libseccomp
-'
+# amd64与arm64场景下安装libseccomp-dev
+# rm -rf release && \
+# docker run -it --rm \
+#   -v $PWD/:/go/src/github.com/opencontainers/runc \
+#   -w /go/src/github.com/opencontainers/runc \
+#   registry.cn-qingdao.aliyuncs.com/wod/libseccomp:v2.5.5 \
+#   sh -c '
+#   mkdir -p release && \
+#   cp -r /opt/libseccomp ./release/libseccomp
+#   '
 ```
 
 ## build
 
 ```bash
 # cross
-docker pull registry.cn-qingdao.aliyuncs.com/wod/golang:1.23-bookworm && \
+docker pull \
+  registry.cn-qingdao.aliyuncs.com/wod/golang:1.23 && \
 docker run -it --rm \
--v $PWD/:/go/src/github.com/opencontainers/runc \
--w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/golang:1.23-bookworm \
-bash .beagle/build-cross.sh
-
-# loong64
-docker pull registry.cn-qingdao.aliyuncs.com/wod/golang:1.23-loongnix && \
-docker run -it --rm \
--v $PWD/:/go/src/github.com/opencontainers/runc \
--w /go/src/github.com/opencontainers/runc \
-registry.cn-qingdao.aliyuncs.com/wod/golang:1.23-loongnix \
-bash .beagle/build-loong64.sh
+  -v $PWD/:/go/src/github.com/opencontainers/runc \
+  -w /go/src/github.com/opencontainers/runc \
+  registry.cn-qingdao.aliyuncs.com/wod/golang:1.23 \
+  bash .beagle/build-cross.sh
 ```
 
 ## cache
