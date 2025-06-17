@@ -7,7 +7,6 @@ on:
   workflow_dispatch: # 允许手动触发
 
 env:
-  REGISTRY_ALIYUN: registry.cn-qingdao.aliyuncs.com
   BUILD_VERSION: v1.2.6
 
 jobs:
@@ -18,12 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY_ALIYUN }}
-          username: ${{ secrets.REGISTRY_USER_ALIYUN }}
-          password: ${{ secrets.REGISTRY_PASSWORD_ALIYUN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cross Build
         env:
@@ -32,7 +31,7 @@ jobs:
           docker run --rm -v ${{ github.workspace }}:/go/src/github.com/opencontainers/runc \
             -w /go/src/github.com/opencontainers/runc \
             -e BUILD_VERSION=${{ env.BUILD_VERSION }} \
-            ${{ env.REGISTRY_ALIYUN }}/wod/golang:1.23-bookworm \
+            ghcr.io/${{ github.repository_owner }}/golang:1.23-bookworm \
             bash -c "bash ./.beagle/build-cross.sh"
 
       - name: Set up Docker Buildx
@@ -46,7 +45,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            ${{ env.REGISTRY_ALIYUN }}/wod/runc:${{ env.BUILD_VERSION }}-amd64
+            ghcr.io/${{ github.repository_owner }}/runc:${{ env.BUILD_VERSION }}-amd64
           build-args: |
             BASE=alpine:3
             VERSION=${{ env.BUILD_VERSION }}
@@ -63,7 +62,7 @@ jobs:
           push: true
           platforms: linux/arm64
           tags: |
-            ${{ env.REGISTRY_ALIYUN }}/wod/runc:${{ env.BUILD_VERSION }}-arm64
+            ghcr.io/${{ github.repository_owner }}/runc:${{ env.BUILD_VERSION }}-arm64
           build-args: |
             BASE=alpine:3
             VERSION=${{ env.BUILD_VERSION }}
@@ -74,7 +73,7 @@ jobs:
 
       - name: Create and push multi-arch manifest
         run: |
-          docker manifest create ${{ env.REGISTRY_ALIYUN }}/wod/runc:${{ env.BUILD_VERSION }} \
-            ${{ env.REGISTRY_ALIYUN }}/wod/runc:${{ env.BUILD_VERSION }}-amd64 \
-            ${{ env.REGISTRY_ALIYUN }}/wod/runc:${{ env.BUILD_VERSION }}-arm64 
-          docker manifest push ${{ env.REGISTRY_ALIYUN }}/wod/runc:${{ env.BUILD_VERSION }}
+          docker manifest create ghcr.io/${{ github.repository_owner }}/runc:${{ env.BUILD_VERSION }} \
+            ghcr.io/${{ github.repository_owner }}/runc:${{ env.BUILD_VERSION }}-amd64 \
+            ghcr.io/${{ github.repository_owner }}/runc:${{ env.BUILD_VERSION }}-arm64 
+          docker manifest push ghcr.io/${{ github.repository_owner }}/runc:${{ env.BUILD_VERSION }}
