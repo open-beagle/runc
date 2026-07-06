@@ -6,11 +6,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased 1.2.z]
 
+## [1.2.9] - 2025-11-27
+
+> Stars hide your fires, let me rest tonight.
+
+### Fixed
+ * libct: fix mips compilation. (#4962, #4965)
+ * When configuring a `tmpfs` mount, only set the `mode=` argument if the
+   target path already existed. This fixes a regression introduced in our
+   [CVE-2025-52881][] mitigation patches. (#4971, #4974)
+ * Fix various file descriptor leaks and add additional tests to detect them as
+   comprehensively as possible. (#5007, #5021, #5027)
+
+### Changed
+ * Downgrade `github.com/cyphar/filepath-securejoin` dependency to `v0.5.2`,
+   which should make it easier for some downstreams to import `runc` without
+   pulling in too many extra packages. (#5027)
+
+[CVE-2025-52881]: https://github.com/opencontainers/runc/security/advisories/GHSA-cgrx-mc8f-2prm
+
+## [1.2.8] - 2025-11-05
+
+> 鳥籠の中に囚われた屈辱を
+
+### Security
+
+This release includes fixes for the following high-severity security issues:
+
+* [CVE-2025-31133][] exploits an issue with how masked paths are implemented in
+  runc. When masking files, runc will bind-mount the container's `/dev/null`
+  inode on top of the file. However, if an attacker can replace `/dev/null`
+  with a symlink to some other procfs file, runc will instead bind-mount the
+  symlink target read-write. This issue affected all known runc versions.
+
+* [CVE-2025-52565][] is very similar in concept and application to
+  [CVE-2025-31133][], except that it exploits a flaw in `/dev/console`
+  bind-mounts. When creating the `/dev/console` bind-mount (to `/dev/pts/$n`),
+  if an attacker replaces `/dev/pts/$n` with a symlink then runc will
+  bind-mount the symlink target over `/dev/console`. This issue affected all
+  versions of runc >= 1.0.0-rc3.
+
+* [CVE-2025-52881][] is a more sophisticated variant of [CVE-2019-19921][],
+  which was a flaw that allowed an attacker to trick runc into writing the LSM
+  process labels for a container process into a dummy tmpfs file and thus not
+  apply the correct LSM labels to the container process. The mitigation we
+  applied for [CVE-2019-19921][] was fairly limited and effectively only caused
+  runc to verify that when we write LSM labels that those labels are actual
+  procfs files. This issue affects all known runc versions.
+
+[CVE-2019-19921]: https://github.com/opencontainers/runc/security/advisories/GHSA-fh74-hm69-rqjw
+[CVE-2025-31133]: https://github.com/opencontainers/runc/security/advisories/GHSA-9493-h29p-rfm2
+[CVE-2025-52565]: https://github.com/opencontainers/runc/security/advisories/GHSA-qw9x-cqr3-wc7r
+[CVE-2025-52881]: https://github.com/opencontainers/runc/security/advisories/GHSA-cgrx-mc8f-2prm
+
+## [1.2.7] - 2025-09-05
+
+> さんをつけろよデコ助野郎！
+
+### Fixed
+ * Removed preemptive "full access to cgroups" warning when calling `runc
+   pause` or `runc unpause` as an unprivileged user without
+   `--systemd-cgroups`. Now the warning is only emitted if an actual permission
+   error was encountered. (#4709, #4720)
+ * Add time namespace to container config after checkpoint/restore. CRIU since
+   version 3.14 uses a time namespace for checkpoint/restore, however it was
+   not joining the time namespace in runc. (#4696, #4714)
+ * Container processes will no longer inherit the CPU affinity of runc by
+   default. Instead, the default CPU affinity of container processes will be
+   the largest set of CPUs permitted by the container's cpuset cgroup and any
+   other system restrictions (such as isolated CPUs). (#4041, #4815, #4858)
+ * Close seccomp agent connection to prevent resource leaks. (#4796, #4800)
+ * Several fixes to our CI, mainly related to AlmaLinux and CRIU. (#4670,
+   #4728, #4736, #4742)
+ * Setting `linux.rootfsPropagation` to `shared` or `unbindable` now functions
+   properly. (#1755, #1815, #4724, #4791)
+ * `runc update` will no longer clear intelRdt state information. (#4828,
+   #4834)
+
+### Changed
+ * In runc 1.2, we changed our mount behaviour to correctly handle clearing
+   flags. However, the error messages we returned did not provide as much
+   information to users about what clearing flags were conflicting with locked
+   mount flags. We now provide more diagnostic information if there is an error
+   when in the fallback path to handle locked mount flags. (#4734, #4740)
+ * Ignore the dmem controller in our cgroup tests, as systemd does not yet
+   support it. (#4806, #4811)
+ * `/proc/net/dev` is no longer included in the permitted procfs overmount
+   list. Its inclusion was almost certainly an error, and because `/proc/net`
+   is a symlink to `/proc/self/net`, overmounting this was almost certainly
+   never useful (and will be blocked by future kernel versions). (#4817, #4820)
+ * CI: Switch to GitHub-hosted ARM runners. Thanks again to @alexellis for
+   supporting runc's ARM CI up until now. (#4844, #4856, #4867)
+ * Simplify the `prepareCriuRestoreMounts` logic for checkpoint-restore.
+   (#4765, #4872)
+
 ## [1.2.6] - 2025-03-17
 
 > Hasta la victoria, siempre.
 
-## Fixed
+### Fixed
  * Fix a stall issue that would happen if setting `O_CLOEXEC` with
    `CloseExecFrom` failed (#4647).
  * `runc` now properly handles joining time namespaces (such as with `runc
@@ -26,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * Remove `Fexecve` helper from `libcontainer/system`. Runc 1.2.1 removed
    runc-dmz, but we forgot to remove this helper added only for that. (#4646)
 
-##  Changed
+### Changed
  * Use Go 1.23 for official builds, run CI with Go 1.24 and drop Ubuntu 20.04
    from CI. We need to drop Ubuntu 20.04 from CI because Github Actions
    announced it's already deprecated and it will be discontinued soon. (#4648)
@@ -1014,7 +1108,10 @@ implementation (libcontainer) is *not* covered by this policy.
 [1.1.0-rc.1]: https://github.com/opencontainers/runc/compare/v1.0.0...v1.1.0-rc.1
 
 <!-- 1.2.z patch releases -->
-[Unreleased 1.2.z]: https://github.com/opencontainers/runc/compare/v1.2.6...release-1.2
+[Unreleased 1.2.z]: https://github.com/opencontainers/runc/compare/v1.2.9...release-1.2
+[1.2.9]: https://github.com/opencontainers/runc/compare/v1.2.8...v1.2.9
+[1.2.8]: https://github.com/opencontainers/runc/compare/v1.2.7...v1.2.8
+[1.2.7]: https://github.com/opencontainers/runc/compare/v1.2.6...v1.2.7
 [1.2.6]: https://github.com/opencontainers/runc/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/opencontainers/runc/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/opencontainers/runc/compare/v1.2.3...v1.2.4

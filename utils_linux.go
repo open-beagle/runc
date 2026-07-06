@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"os"
 	"path/filepath"
@@ -15,6 +16,7 @@ import (
 	"github.com/urfave/cli"
 	"golang.org/x/sys/unix"
 
+	"github.com/opencontainers/runc/internal/pathrs"
 	"github.com/opencontainers/runc/libcontainer"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/specconv"
@@ -228,10 +230,14 @@ func (r *runner) run(config *specs.Process) (int, error) {
 		process.ExtraFiles = append(process.ExtraFiles, r.listenFDs...)
 	}
 	baseFd := 3 + len(process.ExtraFiles)
-	procSelfFd, closer := utils.ProcThreadSelf("fd/")
+	procSelfFd, closer, err := pathrs.ProcThreadSelfOpen("fd/", unix.O_DIRECTORY|unix.O_CLOEXEC)
+	if err != nil {
+		return -1, err
+	}
 	defer closer()
+	defer procSelfFd.Close()
 	for i := baseFd; i < baseFd+r.preserveFDs; i++ {
-		_, err = os.Stat(filepath.Join(procSelfFd, strconv.Itoa(i)))
+		err := unix.Faccessat(int(procSelfFd.Fd()), strconv.Itoa(i), unix.F_OK, 0)
 		if err != nil {
 			return -1, fmt.Errorf("unable to stat preserved-fd %d (of %d): %w", i-baseFd, r.preserveFDs, err)
 		}
@@ -443,4 +449,10 @@ func setupPidfdSocket(process *libcontainer.Process, sockpath string) (_clean fu
 	return func() {
 		conn.Close()
 	}, nil
+}
+
+func maybeLogCgroupWarning(op string, err error) {
+	if errors.Is(err, fs.ErrPermission) {
+		logrus.Warn("runc " + op + " failure might be caused by lack of full access to cgroups")
+	}
 }

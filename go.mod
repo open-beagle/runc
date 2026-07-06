@@ -10,9 +10,9 @@ toolchain go1.22.4
 require (
 	github.com/checkpoint-restore/go-criu/v6 v6.3.0
 	github.com/cilium/ebpf v0.16.0
-	github.com/containerd/console v1.0.4
+	github.com/containerd/console v1.0.5
 	github.com/coreos/go-systemd/v22 v22.5.0
-	github.com/cyphar/filepath-securejoin v0.4.1
+	github.com/cyphar/filepath-securejoin v0.5.2
 	github.com/docker/go-units v0.5.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/moby/sys/mountinfo v0.7.1
@@ -20,7 +20,7 @@ require (
 	github.com/moby/sys/userns v0.1.0
 	github.com/mrunalp/fileutils v0.5.1
 	github.com/opencontainers/runtime-spec v1.2.0
-	github.com/opencontainers/selinux v1.11.0
+	github.com/opencontainers/selinux v1.13.1
 	github.com/seccomp/libseccomp-golang v0.10.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635
