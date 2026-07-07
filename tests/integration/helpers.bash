@@ -13,12 +13,9 @@ eval "$IMAGES"
 unset IMAGES
 
 : "${RUNC:="${INTEGRATION_ROOT}/../../runc"}"
-RECVTTY="${INTEGRATION_ROOT}/../../tests/cmd/recvtty/recvtty"
-SD_HELPER="${INTEGRATION_ROOT}/../../tests/cmd/sd-helper/sd-helper"
-SECCOMP_AGENT="${INTEGRATION_ROOT}/../../tests/cmd/seccompagent/seccompagent"
-FS_IDMAP="${INTEGRATION_ROOT}/../../tests/cmd/fs-idmap/fs-idmap"
-PIDFD_KILL="${INTEGRATION_ROOT}/../../tests/cmd/pidfd-kill/pidfd-kill"
-REMAP_ROOTFS="${INTEGRATION_ROOT}/../../tests/cmd/remap-rootfs/remap-rootfs"
+
+# Path to binaries compiled from packages in tests/cmd by "make test-binaries").
+TESTBINDIR=${INTEGRATION_ROOT}/../cmd/_bin
 
 # Some variables may not always be set. Set those to empty value,
 # if unset, to avoid "unbound variable" error.
@@ -159,7 +156,7 @@ function init_cgroup_paths() {
 function create_parent() {
 	if [ -v RUNC_USE_SYSTEMD ]; then
 		[ ! -v SD_PARENT_NAME ] && return
-		"$SD_HELPER" --parent machine.slice start "$SD_PARENT_NAME"
+		"$TESTBINDIR/sd-helper" --parent machine.slice start "$SD_PARENT_NAME"
 	else
 		[ ! -v REL_PARENT_PATH ] && return
 		if [ -v CGROUP_V2 ]; then
@@ -179,7 +176,7 @@ function create_parent() {
 function remove_parent() {
 	if [ -v RUNC_USE_SYSTEMD ]; then
 		[ ! -v SD_PARENT_NAME ] && return
-		"$SD_HELPER" --parent machine.slice stop "$SD_PARENT_NAME"
+		"$TESTBINDIR/sd-helper" --parent machine.slice stop "$SD_PARENT_NAME"
 	else
 		[ ! -v REL_PARENT_PATH ] && return
 		if [ -v CGROUP_V2 ]; then
@@ -305,7 +302,33 @@ function check_systemd_value() {
 function check_cpu_quota() {
 	local quota=$1
 	local period=$2
-	local sd_quota=$3
+	local sd_quota
+
+	if [ -v RUNC_USE_SYSTEMD ]; then
+		if [ "$quota" = "-1" ]; then
+			sd_quota="infinity"
+		else
+			# In systemd world, quota (CPUQuotaPerSec) is measured in ms
+			# (per second), and systemd rounds it up to 10ms. For example,
+			# given quota=4000 and period=10000, systemd value is 400ms.
+			#
+			# Calculate milliseconds (quota/period * 1000).
+			# First multiply by 1000 to get milliseconds,
+			# then add half of period for proper rounding.
+			local ms=$(((quota * 1000 + period / 2) / period))
+			# Round up to nearest 10ms.
+			ms=$(((ms + 5) / 10 * 10))
+			sd_quota="${ms}ms"
+
+			# Recalculate quota based on systemd value.
+			# Convert ms back to quota units.
+			quota=$((ms * period / 1000))
+
+		fi
+
+		# Systemd values are the same for v1 and v2.
+		check_systemd_value "CPUQuotaPerSecUSec" "$sd_quota"
+	fi
 
 	if [ -v CGROUP_V2 ]; then
 		if [ "$quota" = "-1" ]; then
@@ -316,8 +339,6 @@ function check_cpu_quota() {
 		check_cgroup_value "cpu.cfs_quota_us" "$quota"
 		check_cgroup_value "cpu.cfs_period_us" "$period"
 	fi
-	# systemd values are the same for v1 and v2
-	check_systemd_value "CPUQuotaPerSecUSec" "$sd_quota"
 
 	# CPUQuotaPeriodUSec requires systemd >= v242
 	[ "$(systemd_version)" -lt 242 ] && return
@@ -347,7 +368,18 @@ function check_cpu_shares() {
 	local shares=$1
 
 	if [ -v CGROUP_V2 ]; then
-		local weight=$((1 + ((shares - 2) * 9999) / 262142))
+		# Same formula as ConvertCPUSharesToCgroupV2Value.
+		local weight
+		weight=$(awk -v shares="$shares" '
+		BEGIN {
+			if (shares == 0) { print 0; exit }
+			if (shares <= 2) { print 1; exit }
+			if (shares >= 262144) { print 10000; exit }
+			l = log(shares) / log(2)
+			exponent = (l*l + 125*l) / 612.0 - 7.0/34.0
+			print int(exp(exponent * log(10)) + 0.99)
+		}')
+
 		check_cpu_weight "$weight"
 	else
 		check_cgroup_value "cpu.shares" "$shares"
@@ -361,6 +393,22 @@ function check_cpu_weight() {
 
 	check_cgroup_value "cpu.weight" "$weight"
 	check_systemd_value "CPUWeight" "$weight"
+}
+
+function check_cgroup_dev_iops() {
+	local dev=$1 rbps=$2 wbps=$3 riops=$4 wiops=$5
+
+	if [ -v CGROUP_V2 ]; then
+		iops=$(get_cgroup_value "io.max")
+		printf "== io.max ==\n%s\n" "$iops"
+		grep "^$dev rbps=$rbps wbps=$wbps riops=$riops wiops=$wiops$" <<<"$iops"
+		return
+	fi
+
+	grep "^$dev ${rbps}$" <<<"$(get_cgroup_value blkio.throttle.read_bps_device)"
+	grep "^$dev ${wbps}$" <<<"$(get_cgroup_value blkio.throttle.write_bps_device)"
+	grep "^$dev ${riops}$" <<<"$(get_cgroup_value blkio.throttle.read_iops_device)"
+	grep "^$dev ${wiops}$" <<<"$(get_cgroup_value blkio.throttle.write_iops_device)"
 }
 
 # Helper function to set a resources limit
@@ -731,7 +779,7 @@ function setup_recvtty() {
 	export CONSOLE_SOCKET="$dir/sock"
 
 	# We need to start recvtty in the background, so we double fork in the shell.
-	("$RECVTTY" --pid-file "$dir/pid" --mode null "$CONSOLE_SOCKET" &) &
+	("$TESTBINDIR/recvtty" --pid-file "$dir/pid" --mode null "$CONSOLE_SOCKET" &) &
 }
 
 function teardown_recvtty() {
@@ -748,7 +796,7 @@ function teardown_recvtty() {
 }
 
 function setup_seccompagent() {
-	("${SECCOMP_AGENT}" -socketfile="$SECCCOMP_AGENT_SOCKET" -pid-file "$BATS_TMPDIR/seccompagent.pid" &) &
+	("$TESTBINDIR/seccompagent" -socketfile="$SECCCOMP_AGENT_SOCKET" -pid-file "$BATS_TMPDIR/seccompagent.pid" &) &
 }
 
 function teardown_seccompagent() {
@@ -757,6 +805,29 @@ function teardown_seccompagent() {
 	fi
 	rm -f "$BATS_TMPDIR/seccompagent.pid"
 	rm -f "$SECCCOMP_AGENT_SOCKET"
+}
+
+LOOPBACK_DEVICE_LIST="$(mktemp "$BATS_TMPDIR/losetup.XXXXXX")"
+
+function setup_loopdev() {
+	local backing dev
+	backing="$(mktemp "$BATS_RUN_TMPDIR/backing.img.XXXXXX")"
+	truncate --size=4K "$backing"
+
+	dev="$(losetup --find --show "$backing")" || skip "unable to create a loop device"
+	echo "$dev" >>"$LOOPBACK_DEVICE_LIST"
+
+	unlink "$backing"
+	echo "$dev"
+}
+
+function teardown_loopdevs() {
+	[ -s "$LOOPBACK_DEVICE_LIST" ] || return 0
+	while IFS= read -r dev; do
+		echo "losetup -d '$dev'" >&2
+		losetup -d "$dev"
+	done <"$LOOPBACK_DEVICE_LIST"
+	truncate --size=0 "$LOOPBACK_DEVICE_LIST"
 }
 
 function setup_bundle() {
@@ -806,7 +877,7 @@ function teardown_bundle() {
 function remap_rootfs() {
 	[ ! -v ROOT ] && return 0 # nothing to remap
 
-	"$REMAP_ROOTFS" "$ROOT/bundle"
+	"$TESTBINDIR/remap-rootfs" "$ROOT/bundle"
 }
 
 function is_kernel_gte() {
@@ -828,7 +899,7 @@ function requires_idmap_fs() {
 
 	# We need to "|| true" it to avoid CI failure as this binary may return with
 	# something different than 0.
-	stderr=$($FS_IDMAP "$fs" 2>&1 >/dev/null || true)
+	stderr=$("$TESTBINDIR/fs-idmap" "$fs" 2>&1 >/dev/null || true)
 
 	case $stderr in
 	*invalid\ argument)
@@ -862,7 +933,7 @@ function setup_pidfd_kill() {
 	mkdir "${dir}"
 	export PIDFD_SOCKET="${dir}/sock"
 
-	("${PIDFD_KILL}" --pid-file "${dir}/pid" --signal "${signal}" "${PIDFD_SOCKET}" &) &
+	("$TESTBINDIR/pidfd-kill" --pid-file "${dir}/pid" --signal "${signal}" "${PIDFD_SOCKET}" &) &
 
 	# ensure socket is ready
 	retry 10 1 stat "${PIDFD_SOCKET}"

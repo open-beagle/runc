@@ -9,11 +9,12 @@ import (
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"golang.org/x/sys/unix"
 
-	"github.com/opencontainers/runc/libcontainer/cgroups/manager"
+	"github.com/opencontainers/cgroups"
+	"github.com/opencontainers/cgroups/manager"
+	"github.com/opencontainers/runc/internal/pathrs"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/configs/validate"
 	"github.com/opencontainers/runc/libcontainer/intelrdt"
-	"github.com/opencontainers/runc/libcontainer/utils"
 )
 
 const (
@@ -82,7 +83,7 @@ func Create(root, id string, config *configs.Config) (*Container, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to get cgroup freezer state: %w", err)
 	}
-	if st == configs.Frozen {
+	if st == cgroups.Frozen {
 		return nil, errors.New("container's cgroup unexpectedly frozen")
 	}
 
@@ -163,6 +164,10 @@ func loadState(root string) (*State, error) {
 	if err := json.NewDecoder(f).Decode(&state); err != nil {
 		return nil, err
 	}
+	// Cgroup v1 fs manager expect Resources to never be nil.
+	if state.Config.Cgroups.Resources == nil {
+		state.Config.Cgroups.Resources = &cgroups.Resources{}
+	}
 	return state, nil
 }
 
@@ -206,7 +211,7 @@ func validateID(id string) error {
 
 	}
 
-	if string(os.PathSeparator)+id != utils.CleanPath(string(os.PathSeparator)+id) {
+	if string(os.PathSeparator)+id != pathrs.LexicallyCleanPath(string(os.PathSeparator)+id) {
 		return ErrInvalidID
 	}
 

@@ -15,11 +15,11 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/opencontainers/cgroups"
+	"github.com/opencontainers/cgroups/systemd"
 	"github.com/opencontainers/runc/internal/linux"
 	"github.com/opencontainers/runc/internal/pathrs"
 	"github.com/opencontainers/runc/libcontainer"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
-	"github.com/opencontainers/runc/libcontainer/cgroups/systemd"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/internal/userns"
 	"github.com/opencontainers/runtime-spec/specs-go"
@@ -401,7 +401,7 @@ func TestAdditionalGroups(t *testing.T) {
 		Env:              standardEnvironment,
 		Stdin:            nil,
 		Stdout:           &stdout,
-		AdditionalGroups: []string{"plugdev", "audio"},
+		AdditionalGroups: []int{3333, 99999},
 		Init:             true,
 	}
 	err = container.Run(&pconfig)
@@ -412,13 +412,11 @@ func TestAdditionalGroups(t *testing.T) {
 
 	outputGroups := stdout.String()
 
-	// Check that the groups output has the groups that we specified
-	if !strings.Contains(outputGroups, "audio") {
-		t.Fatalf("Listed groups do not contain the audio group as expected: %v", outputGroups)
-	}
-
-	if !strings.Contains(outputGroups, "plugdev") {
-		t.Fatalf("Listed groups do not contain the plugdev group as expected: %v", outputGroups)
+	// Check that the groups output has the groups that we specified.
+	for _, gid := range pconfig.AdditionalGroups {
+		if !strings.Contains(outputGroups, strconv.Itoa(gid)) {
+			t.Errorf("Listed groups do not contain gid %d as expected: %v", gid, outputGroups)
+		}
 	}
 }
 
@@ -474,7 +472,7 @@ func testFreeze(t *testing.T, withSystemd bool, useSet bool) {
 	if !useSet {
 		err = container.Pause()
 	} else {
-		config.Cgroups.Resources.Freezer = configs.Frozen
+		config.Cgroups.Resources.Freezer = cgroups.Frozen
 		err = container.Set(*config)
 	}
 	ok(t, err)
@@ -488,7 +486,7 @@ func testFreeze(t *testing.T, withSystemd bool, useSet bool) {
 	if !useSet {
 		err = container.Resume()
 	} else {
-		config.Cgroups.Resources.Freezer = configs.Thawed
+		config.Cgroups.Resources.Freezer = cgroups.Thawed
 		err = container.Set(*config)
 	}
 	ok(t, err)
@@ -1024,13 +1022,13 @@ func TestHook(t *testing.T) {
 			}),
 		},
 		configs.CreateContainer: configs.HookList{
-			configs.NewCommandHook(configs.Command{
+			configs.NewCommandHook(&configs.Command{
 				Path: "/bin/bash",
 				Args: []string{"/bin/bash", "-c", fmt.Sprintf("touch ./%s", hookFiles[configs.CreateContainer])},
 			}),
 		},
 		configs.StartContainer: configs.HookList{
-			configs.NewCommandHook(configs.Command{
+			configs.NewCommandHook(&configs.Command{
 				Path: "/bin/sh",
 				Args: []string{"/bin/sh", "-c", fmt.Sprintf("touch /%s", hookFiles[configs.StartContainer])},
 			}),
