@@ -6,7 +6,7 @@ set -ex
 
 mkdir -p release
 
-export BUILD_VERSION=${BUILD_VERSION:-"1.2.3-beagle"}
+export BUILD_VERSION=${BUILD_VERSION:-"1.3.6-beagle"}
 export BUILD_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || true)
 
 export TARGETPLATFORM=linux/amd64

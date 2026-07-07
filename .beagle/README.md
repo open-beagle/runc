@@ -15,9 +15,15 @@ git -C ansible-docker-runc merge v1.3.6
 ```bash
 # ./.github/workflows/build-1.3.yml
 git -C ansible-docker-runc checkout release-v1.3 && \
-git -C ansible-docker-runc merge main && \
+git -C ansible-docker-runc merge dev && \
 git -C ansible-docker-runc push origin release-v1.3 && \
-git -C ansible-docker-runc checkout main
+git -C ansible-docker-runc checkout dev
+
+# 合并至主分支
+git -C ansible-docker-runc checkout main && \
+git -C ansible-docker-runc merge dev && \
+git -C ansible-docker-runc push origin main && \
+git -C ansible-docker-runc checkout dev
 ```
 
 ## libseccomp
@@ -40,8 +46,6 @@ git -C ansible-docker-runc checkout main
 
 ```bash
 # cross
-docker pull \
-  registry.cn-qingdao.aliyuncs.com/wod/golang:1.24-bookworm && \
 docker run -it --rm \
   -v $PWD/:/go/src/github.com/opencontainers/ \
   -v $PWD/ansible-docker-runc:/go/src/github.com/opencontainers/runc \

@@ -7,10 +7,9 @@ Subject: [PATCH] add seccomp support for loong64
  libcontainer/seccomp/config.go                        |  1 +
  libcontainer/seccomp/patchbpf/enosys_linux.go         |  3 +++
  libcontainer/seccomp/patchbpf/enosys_linux_test.go    |  1 +
- .../opencontainers/runtime-spec/specs-go/config.go    |  1 +
  .../github.com/seccomp/libseccomp-golang/seccomp.go   |  6 ++++++
  .../seccomp/libseccomp-golang/seccomp_internal.go     | 11 ++++++++++-
- 6 files changed, 22 insertions(+), 1 deletion(-)
+ 5 files changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/libcontainer/seccomp/config.go b/libcontainer/seccomp/config.go
 index 3ca03ed8..5c92169f 100644
@@ -57,18 +56,6 @@ index cb845892..0e26fded 100644
  	// Dummy value to indicate a configuration with no architecture specified.
  	"native",
  }
-diff --git a/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go b/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go
-index d1236ba7..6b60e460 100644
---- a/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go
-+++ b/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go
-@@ -751,6 +751,7 @@ const (
- 	ArchPARISC      Arch = "SCMP_ARCH_PARISC"
- 	ArchPARISC64    Arch = "SCMP_ARCH_PARISC64"
- 	ArchRISCV64     Arch = "SCMP_ARCH_RISCV64"
-+	ArchLOONGARCH64 Arch = "SCMP_ARCH_LOONGARCH64"
- )
- 
- // LinuxSeccompAction taken upon Seccomp rule match
 diff --git a/vendor/github.com/seccomp/libseccomp-golang/seccomp.go b/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
 index c2340675..50222f53 100644
 --- a/vendor/github.com/seccomp/libseccomp-golang/seccomp.go
@@ -152,4 +139,3 @@ index 0a7fd34f..bbdeab3d 100644
  	default:
 -- 
 2.39.5
-
